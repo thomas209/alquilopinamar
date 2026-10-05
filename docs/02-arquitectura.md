@@ -93,8 +93,8 @@ middleware.ts
 **Versión de Next:** se usa la última 16.x con parches de seguridad (16.3.8), no la 16.2.9 de Member, que tiene avisos críticos publicados.
 
 **A verificar al implementar:**
-- `lib/auth.ts` de la referencia usa la forma de NextAuth v5 pero el paquete instalado es v4 y el middleware usa `getToken` de v4. Acá se elige una sola versión y se usa de punta a punta.
-- Next 16 renombra `middleware.ts` a `proxy.ts`. El prompt pide `middleware.ts`; se confirma cuál usar al crear el proyecto.
+- NextAuth: se usa la v4 de punta a punta (`authOptions` + `getServerSession` + `getToken`). La referencia mezclaba la forma de v5 con el paquete v4.
+- Next 16 renombró `middleware.ts` a `proxy.ts` (el nombre viejo quedó obsoleto y avisa en cada build). El proyecto usa `proxy.ts`; donde estos docs dicen "middleware" se refieren a ese archivo.
 - El middleware valida la cookie de usuario con Web Crypto (HMAC) para que funcione en cualquier runtime.
 
 ## Autenticación

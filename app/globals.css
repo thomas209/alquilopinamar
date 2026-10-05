@@ -34,6 +34,35 @@
   --shadow-hoja: 0 30px 80px rgba(0, 0, 0, 0.25);
   --shadow-flotante: 0 8px 28px rgba(0, 0, 0, 0.1);
   --shadow-vidrio: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+  /* Animaciones (todas con la misma curva) */
+  --animate-velo: velo 0.25s ease both;
+  --animate-hoja-sube: hoja-sube 0.45s var(--ease-app) both;
+  --animate-hoja-entra: hoja-entra 0.45s var(--ease-app) both;
+  --animate-entrada: entrada 0.45s var(--ease-app) both;
+  --animate-pop: pop 0.5s var(--ease-app);
+
+  @keyframes velo {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes hoja-sube {
+    from { transform: translateY(100%); }
+    to { transform: none; }
+  }
+  @keyframes hoja-entra {
+    from { transform: translateX(calc(100% + 12px)); }
+    to { transform: none; }
+  }
+  @keyframes entrada {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6); }
+    45% { transform: scale(1.28); }
+    100% { transform: scale(1); }
+  }
 }
 
 /* Tipografias: las variables --font-inter, etc. las carga next/font en app/layout.tsx */
@@ -61,6 +90,37 @@
     outline: 2px solid var(--color-negro);
     outline-offset: 2px;
   }
+}
+
+/* =====================
+   VIDRIO (valores de docs/05-design-system.md)
+===================== */
+@utility vidrio-header {
+  background-color: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+}
+@utility vidrio-hoja {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(26px) saturate(1.5);
+  backdrop-filter: blur(26px) saturate(1.5);
+}
+@utility vidrio-barra {
+  background-color: rgba(255, 255, 255, 0.72);
+  border-top: 1px solid rgba(10, 10, 10, 0.06);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+}
+@utility vidrio-circulo {
+  background-color: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-vidrio);
+}
+/* Fondo oscuro detras de una hoja */
+@utility velo {
+  background-color: rgba(10, 10, 10, 0.3);
 }
 
 /* Quien pide menos movimiento no ve animaciones */

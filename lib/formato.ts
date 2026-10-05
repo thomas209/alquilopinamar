@@ -1,0 +1,25 @@
+// Formatos compartidos: precios, periodos y codigo de propiedad.
+export type Moneda = "ARS" | "USD";
+export type Periodo = "NOCHE" | "SEMANA" | "QUINCENA" | "MES" | "TEMPORADA" | "TOTAL";
+
+const numero = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+
+// "USD 1.200" / "$ 850.000"
+export function formatearMonto(monto: number, moneda: Moneda): string {
+  return (moneda === "USD" ? "USD " : "$ ") + numero.format(monto);
+}
+
+// Texto que acompaña al precio. TOTAL (venta) no lleva nada.
+export const ETIQUETA_PERIODO: Record<Periodo, string> = {
+  NOCHE: "noche",
+  SEMANA: "semana",
+  QUINCENA: "quincena",
+  MES: "mes",
+  TEMPORADA: "temporada",
+  TOTAL: "",
+};
+
+// 123 -> "AP-0123"
+export function formatearCodigo(code: number): string {
+  return "AP-" + String(code).padStart(4, "0");
+}

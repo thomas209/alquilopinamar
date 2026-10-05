@@ -1,0 +1,242 @@
+// AlquiloPinamar — schema de la Fase 1 (ver docs/03-schema-prisma-v1.md).
+// Las fases siguientes agregan sus modelos con una migracion propia.
+// Todo cambio de aca lleva su migracion: nada de "db push" (docs/base-de-datos.md).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(EDITOR)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Zone {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  description    String?  @db.Text // texto de la pagina de zona
+  coverImage     String?
+  lat            Float?
+  lng            Float?
+  seoTitle       String?
+  seoDescription String?
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  properties Property[]
+}
+
+model Property {
+  id   String @id @default(cuid())
+  code Int    @unique @default(autoincrement()) // se muestra como AP-0001
+  slug String @unique
+
+  title           String
+  description     String         @db.Text
+  operation       Operation
+  type            PropertyType
+  status          PropertyStatus @default(BORRADOR)
+  rejectionReason String?
+  publishedAt     DateTime?
+
+  // Ubicacion
+  zoneId            String
+  zone              Zone    @relation(fields: [zoneId], references: [id])
+  address           String? // privada: no se muestra en la ficha
+  lat               Float?
+  lng               Float?
+  showExactLocation Boolean @default(false) // false = zona aproximada en el mapa
+  distanceToSeaM    Int? // metros al mar
+
+  // Caracteristicas
+  rooms       Int? // ambientes
+  bedrooms    Int?
+  bathrooms   Int?
+  garages     Int?
+  maxGuests   Int?
+  coveredM2   Int?
+  lotM2       Int?
+  hasPool     Boolean @default(false)
+  petsAllowed Boolean @default(false)
+
+  // Precio base (el "desde" del listado y lo que se ordena)
+  price          Decimal?    @db.Decimal(14, 2)
+  currency       Currency    @default(USD)
+  pricePeriod    PricePeriod
+  priceOnRequest Boolean     @default(false) // muestra "Consultar"
+  expenses       Decimal?    @db.Decimal(14, 2) // expensas (alquiler anual)
+
+  // Estadia
+  houseRules   String? @db.Text
+  checkInTime  String?
+  checkOutTime String?
+  minNights    Int?
+
+  // Contacto: si es null se usa el WhatsApp del sitio
+  contactWhatsapp String?
+
+  // Destacados (preparado para monetizar; hoy lo maneja el admin)
+  isFeatured    Boolean   @default(false)
+  featuredUntil DateTime?
+  featuredOrder Int?
+
+  // Metricas simples
+  viewCount      Int @default(0)
+  whatsappClicks Int @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // baja logica
+
+  images    PropertyImage[]
+  amenities PropertyAmenity[]
+  rates     PropertyRate[]
+  inquiries Inquiry[]
+
+  @@index([status, operation, zoneId, type])
+  @@index([status, operation, currency, price])
+  @@index([status, isFeatured, featuredOrder])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  publicId   String // id en Cloudinary, para borrar y transformar
+  width      Int?
+  height     Int?
+  altText    String?
+  sortOrder  Int      @default(0) // 0 = portada
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId, sortOrder])
+}
+
+model Amenity {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  name      String
+  icon      String? // nombre del icono del set unico
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  propertyId String
+  amenityId  String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId])
+  @@index([amenityId])
+}
+
+model PropertyRate {
+  id         String      @id @default(cuid())
+  propertyId String
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  label      String // "Enero · 1ra quincena", "Temporada baja"
+  period     PricePeriod
+  amount     Decimal     @db.Decimal(14, 2)
+  currency   Currency
+  startDate  DateTime?   @db.Date // Fase 1: opcional, solo informativo
+  endDate    DateTime?   @db.Date // exclusivo
+  minNights  Int?
+  sortOrder  Int         @default(0)
+
+  @@index([propertyId, startDate, endDate])
+}
+
+model Inquiry {
+  id         String        @id @default(cuid())
+  propertyId String
+  property   Property      @relation(fields: [propertyId], references: [id])
+  name       String
+  email      String
+  phone      String?
+  message    String        @db.Text
+  checkIn    DateTime?     @db.Date
+  checkOut   DateTime?     @db.Date
+  guests     Int?
+  status     InquiryStatus @default(NUEVA)
+  adminNotes String?       @db.Text
+  ipHash     String? // hash de la IP, solo para el limite anti-spam
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([propertyId, createdAt])
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model SiteSetting {
+  key       String   @id // "home.hero", "sitio.contacto", ...
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+enum AdminRole {
+  SUPERADMIN
+  EDITOR
+}
+
+enum Operation {
+  ALQUILER_TEMPORARIO
+  ALQUILER_ANUAL
+  VENTA
+}
+
+enum PropertyType {
+  CASA
+  DEPARTAMENTO
+  DUPLEX
+  CABANA
+  LOTE
+  LOCAL
+}
+
+enum PropertyStatus {
+  BORRADOR
+  EN_REVISION
+  PUBLICADA
+  PAUSADA
+  RECHAZADA
+}
+
+enum Currency {
+  ARS
+  USD
+}
+
+enum PricePeriod {
+  NOCHE
+  SEMANA
+  QUINCENA
+  MES
+  TEMPORADA
+  TOTAL
+}
+
+enum InquiryStatus {
+  NUEVA
+  RESPONDIDA
+  CERRADA
+}

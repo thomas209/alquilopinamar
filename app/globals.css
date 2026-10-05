@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* La copia de Member es solo de consulta: Tailwind no tiene que leer sus clases. */
+@source not "../referencia-member";
+
+/* =====================
+   TOKENS (ver docs/05-design-system.md)
+   Se definen una sola vez aca. Ningun color, radio o sombra fuera de esta lista.
+   Ojo: NO agregar "* { margin: 0; padding: 0 }": anula los espacios de Tailwind.
+===================== */
+@theme {
+  /* Color */
+  --color-negro: #0a0a0a;
+  --color-blanco: #ffffff;
+  --color-gris-50: #f5f5f7; /* campos, bloques suaves */
+  --color-gris-100: #f4f4f4; /* fondo de fotos, pastillas claras */
+  --color-gris-200: #ededed; /* lineas */
+  --color-gris-400: #a3a3a3; /* deshabilitado, placeholder */
+  --color-texto-2: #6e6e73; /* texto secundario */
+  --color-link: #0066cc;
+  --color-ok: #16a34a; /* solo estados */
+  --color-error: #dc2626; /* solo estados y favorito activo */
+
+  /* Radios */
+  --radius-campo: 14px;
+  --radius-card: 18px;
+  --radius-hoja: 28px;
+  --radius-pastilla: 999px;
+
+  /* Movimiento */
+  --ease-app: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Sombras: solo en hojas y elementos flotantes, nunca en cards */
+  --shadow-hoja: 0 30px 80px rgba(0, 0, 0, 0.25);
+  --shadow-flotante: 0 8px 28px rgba(0, 0, 0, 0.1);
+  --shadow-vidrio: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Tipografias: las variables --font-inter, etc. las carga next/font en app/layout.tsx */
+@theme inline {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-titulo: var(--font-instrument), "Helvetica Neue", Arial, sans-serif;
+  --font-rotulo: var(--font-dm-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-blanco);
+    color: var(--color-negro);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-negro);
+    outline-offset: 2px;
+  }
+}
+
+/* Quien pide menos movimiento no ve animaciones */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

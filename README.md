@@ -4,6 +4,7 @@ Marketplace de alquiler y venta de propiedades en Pinamar y alrededores.
 
 - Objetivo, diseño, stack y fases: `PROMPT.md`
 - Reglas para trabajar en el repo (base de datos, ramas): `CLAUDE.md`
+- Estado del proyecto y tareas pendientes: `PENDIENTES.md`
 - Documentación: `docs/`
 
 ## Primera vez

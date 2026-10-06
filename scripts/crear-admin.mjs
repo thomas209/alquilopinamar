@@ -1,0 +1,58 @@
+// CREA (O ACTUALIZA) UN USUARIO DEL ADMIN en la base local.
+// Pide mail, nombre y contraseña por la terminal. La contraseña no se muestra
+// mientras se escribe y se guarda encriptada (nunca en texto plano).
+//
+// Uso: npm run admin:crear
+import readline from "readline";
+import bcrypt from "bcryptjs";
+import { PrismaClient } from "@prisma/client";
+
+function preguntar(texto, { oculto = false } = {}) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    if (oculto) {
+      // No se muestra lo que se escribe
+      rl._writeToOutput = (s) => {
+        if (s.includes(texto)) rl.output.write(texto);
+      };
+    }
+    rl.question(texto, (r) => {
+      rl.close();
+      if (oculto) process.stdout.write("\n");
+      resolve(r.trim());
+    });
+  });
+}
+
+const prisma = new PrismaClient();
+
+try {
+  console.log("\nCrear usuario del admin (base local)\n");
+
+  const email = (await preguntar("Mail: ")).toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("El mail no es válido.");
+
+  const name = await preguntar("Nombre: ");
+  if (!name) throw new Error("Falta el nombre.");
+
+  const password = await preguntar("Contraseña (mínimo 10 caracteres, no se ve al escribir): ", { oculto: true });
+  if (password.length < 10) throw new Error("La contraseña tiene que tener al menos 10 caracteres.");
+  const repetida = await preguntar("Repetí la contraseña: ", { oculto: true });
+  if (repetida !== password) throw new Error("Las contraseñas no coinciden.");
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const existia = await prisma.adminUser.findUnique({ where: { email } });
+
+  await prisma.adminUser.upsert({
+    where: { email },
+    update: { name, passwordHash, isActive: true },
+    create: { email, name, passwordHash, role: "SUPERADMIN" },
+  });
+
+  console.log("\nListo: usuario " + email + (existia ? " actualizado." : " creado.") + " Ya podés entrar en /admin/login\n");
+} catch (e) {
+  console.error("\nNo se pudo crear el usuario: " + e.message + "\n");
+  process.exitCode = 1;
+} finally {
+  await prisma.$disconnect();
+}

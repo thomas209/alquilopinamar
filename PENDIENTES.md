@@ -1,35 +1,31 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 5 de octubre de 2026.
+> Última actualización: 6 de octubre de 2026.
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
 
-Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system y la primera parte del admin. Falta la carga de propiedades, toda la parte pública y publicar el sitio.
+Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system y el admin completo de propiedades, con fotos. Falta toda la parte pública y publicar el sitio.
 
 | Paso de la Fase 1 | Estado |
 |---|---|
 | 1. Proyecto base + scripts de base de datos | Hecho, en `main` |
 | 2. Design system (componentes base) | Hecho, en `main` |
-| 3. Schema Fase 1 + migración inicial + datos iniciales | Hecho, en la rama `admin-base` |
-| 4a. Admin: login, zonas y amenities | Hecho y probado, en la rama `admin-base` (falta unirla a `main`) |
-| 4b. Admin: propiedades (listado, formulario, publicar, pausar, duplicar, dar de baja) | Hecho en la rama `admin-base`; falta probarlo en la Mac |
-| 4c. Admin: fotos de las propiedades (necesita Cloudinary) | **Siguiente** |
-| 5. Sitio público: header, home con buscador, listado con filtros, ficha | Pendiente |
+| 3. Schema Fase 1 + migración inicial + datos iniciales | Hecho, en `main` |
+| 4a. Admin: login, zonas y amenities | Hecho y probado, en `main` |
+| 4b. Admin: propiedades (listado, formulario, publicar, pausar, duplicar, dar de baja) | Hecho y probado, en `main` |
+| 4c. Admin: fotos de las propiedades (subir, ordenar, portada, borrar) | Hecho y probado, en la rama `admin-fotos` (falta unirla a `main`) |
+| 5. Sitio público: header, home con buscador, listado con filtros, ficha | **Siguiente** |
 | 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | Pendiente |
 | 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Pendiente |
 | 8. Páginas institucionales, métricas, revisión en celular y publicación | Pendiente |
 
 ## Lo próximo que tiene que hacer Tommy
 
-1. **Unir la rama `admin-base` a `main`.** En GitHub: entrar al repo → pestaña *Pull requests* → *New pull request* → elegir `admin-base` → *Create pull request* → *Merge pull request* → *Confirm merge*. Después, en la Terminal:
-   ```bash
-   cd ~/Desktop/alquilopinamar
-   git checkout main
-   git pull
-   ```
-2. **Crear una cuenta de Cloudinary para AlquiloPinamar** (plan gratis, separada de la de Member). Hace falta para subir fotos. Los tres datos (cloud name, API key, API secret) van en el archivo `.env`, no en el chat.
-3. **Conseguir cuando se pueda:** dominio definitivo, número de WhatsApp del sitio y logo. No frenan el desarrollo.
+1. **Unir la rama `admin-fotos` a `main`** con un pull request en GitHub (Claude lo crea; el *Merge* lo hace Tommy).
+2. **Cargar 3 o 4 propiedades reales con 5 fotos o más y publicarlas**, para armar y probar el sitio público con contenido real.
+3. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
+4. **Conseguir cuando se pueda:** dominio definitivo, número de WhatsApp del sitio y logo. No frenan el desarrollo.
 
 ## Qué está hecho
 
@@ -56,6 +52,8 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - Login en `/admin/login` con usuario y contraseña (usuario de Tommy ya creado en la base local).
 - `proxy.ts` protege `/admin` y `/api/admin`.
 - Inicio con números, y alta / edición / borrado de zonas y amenities.
+- Propiedades: listado con buscador y filtros, formulario completo, publicar, pausar, duplicar y dar de baja.
+- Fotos: subida múltiple a Cloudinary, orden (arrastrando o con flechas), portada y borrado.
 - Propiedades: listado con buscador y filtros, formulario completo (datos, ubicación, características, amenities, precio, tarifas, reglas, destacado), publicar, pausar, duplicar y dar de baja.
 
 ## Qué falta desarrollar
@@ -94,11 +92,13 @@ Seña con Mercado Pago, reseñas, perfil de anfitrión, mails de notificación.
 | Next.js | 16.3.8 y no la 16.2.9 de Member, que tiene avisos de seguridad críticos |
 | Protección de rutas | Archivo `proxy.ts` (en Next 16 reemplaza a `middleware.ts`) |
 | `referencia-member` | Fuera de git: tiene el código de Member y datos bancarios |
+| Cloudinary | Misma cuenta que Member (`dklvmlzds`), con clave propia `alquilopinamar` (rol Master Admin). Todo va a la carpeta `alquilopinamar/propiedades/AP-xxxx/`; el código no sube ni borra nada fuera de `alquilopinamar/`. Comparten el cupo del plan gratis |
+| Fotos | Van directo del navegador a Cloudinary con firma del servidor, en calidad original. Hasta 10 MB cada una y 40 por propiedad. Una publicada no puede quedar con menos del mínimo |
 
 ## Datos de esta Mac
 
 - Base local: Postgres.app en el **puerto 5433**, base `alquilopinamar_dev`. El puerto 5432 lo usa otro Postgres que ya estaba instalado: no tocarlo.
-- `.env` (no se sube a git): `DATABASE_URL`, `NEXT_PUBLIC_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`. Faltan las tres variables de Cloudinary.
+- `.env` (no se sube a git): `DATABASE_URL`, `NEXT_PUBLIC_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`. Y las de Cloudinary: `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_FOLDER`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
 - Nada de este proyecto toca Member: ni su carpeta, ni su repo, ni su base, ni sus cuentas.
 
 ## Comandos de todos los días

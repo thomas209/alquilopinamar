@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import PropiedadForm from "@/components/admin/PropiedadForm";
-import { faltaParaPublicar } from "@/lib/propiedad";
+import { faltaParaPublicar, MIN_FOTOS, MIN_FOTOS_LOTE } from "@/lib/propiedad";
 
 export const metadata: Metadata = { title: "Editar propiedad" };
 
@@ -17,7 +17,7 @@ export default async function AdminPropiedadEditarPage({ params }: { params: Pro
     include: {
       amenities: { select: { amenityId: true } },
       rates: { orderBy: { sortOrder: "asc" } },
-      _count: { select: { images: true } },
+      images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true } },
     },
   });
   if (!p) notFound();
@@ -46,8 +46,10 @@ export default async function AdminPropiedadEditarPage({ params }: { params: Pro
         code: p.code,
         slug: p.slug,
         status: p.status,
-        fotos: p._count.images,
-        falta: faltaParaPublicar({ ...p, fotos: p._count.images }),
+        fotos: p.images.length,
+        imagenes: p.images,
+        minimoFotos: p.type === "LOTE" ? MIN_FOTOS_LOTE : MIN_FOTOS,
+        falta: faltaParaPublicar({ ...p, fotos: p.images.length }),
         valores: {
           title: p.title,
           description: p.description,

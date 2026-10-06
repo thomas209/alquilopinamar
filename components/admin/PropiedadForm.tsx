@@ -7,6 +7,7 @@ import { Campo, CampoArea, CampoSelect } from "@/components/ui/Campo";
 import { PastillaEstado, PastillaFiltro } from "@/components/ui/Pastilla";
 import Rotulo from "@/components/ui/Rotulo";
 import Segmentado from "@/components/ui/Segmentado";
+import FotosPropiedad, { type FotoAdmin } from "@/components/admin/FotosPropiedad";
 import {
   ESTADOS,
   MONEDAS,
@@ -74,6 +75,8 @@ type Existente = {
   slug: string;
   status: Estado;
   fotos: number;
+  imagenes: FotoAdmin[];
+  minimoFotos: number;
   falta: string[];
   valores: ValoresPropiedad;
 };
@@ -451,10 +454,11 @@ export default function PropiedadForm({
       </Bloque>
 
       <Bloque titulo="Fotos">
-        <p className="max-w-[60ch] text-[14px] text-texto-2">
-          {propiedad ? "Esta propiedad tiene " + propiedad.fotos + (propiedad.fotos === 1 ? " foto. " : " fotos. ") : ""}
-          La subida de fotos se suma en el próximo paso, cuando esté conectada la cuenta de Cloudinary.
-        </p>
+        {propiedad ? (
+          <FotosPropiedad propiedadId={propiedad.id} iniciales={propiedad.imagenes} minimo={propiedad.minimoFotos} />
+        ) : (
+          <p className="max-w-[60ch] text-[14px] text-texto-2">Primero creá el borrador. Después se habilita la subida de fotos.</p>
+        )}
       </Bloque>
 
       {propiedad && (
@@ -488,7 +492,7 @@ export default function PropiedadForm({
             <Boton variante="secundario" tamano="chico" disabled={ocupado} onClick={duplicar}>
               Duplicar
             </Boton>
-            <Boton variante="texto" className="text-error" disabled={ocupado} onClick={darDeBaja}>
+            <Boton variante="texto" className="!text-error" disabled={ocupado} onClick={darDeBaja}>
               {confirmarBaja ? "¿Seguro? Tocá de nuevo para dar de baja" : "Dar de baja"}
             </Boton>
           </div>

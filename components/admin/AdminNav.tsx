@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 
 const SECCIONES = [
   { href: "/admin", etiqueta: "Inicio" },
+  { href: "/admin/propiedades", etiqueta: "Propiedades" },
   { href: "/admin/zonas", etiqueta: "Zonas" },
   { href: "/admin/amenities", etiqueta: "Amenities" },
 ];

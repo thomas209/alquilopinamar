@@ -16,9 +16,9 @@ export default async function AdminInicioPage() {
   ]);
 
   const numeros = [
-    { etiqueta: "Propiedades publicadas", valor: publicadas },
-    { etiqueta: "Borradores", valor: borradores },
-    { etiqueta: "Consultas sin responder", valor: consultasNuevas },
+    { etiqueta: "Propiedades publicadas", valor: publicadas, href: "/admin/propiedades?estado=PUBLICADA" },
+    { etiqueta: "Borradores", valor: borradores, href: "/admin/propiedades?estado=BORRADOR" },
+    { etiqueta: "Consultas sin responder", valor: consultasNuevas, href: undefined },
     { etiqueta: "Zonas activas", valor: zonas, href: "/admin/zonas" },
     { etiqueta: "Amenities activos", valor: amenities, href: "/admin/amenities" },
   ];
@@ -46,7 +46,7 @@ export default async function AdminInicioPage() {
         })}
       </div>
       <p className="mt-8 max-w-[52ch] text-[14px] text-texto-2">
-        La carga de propiedades y la bandeja de consultas se suman en los próximos pasos.
+        Las fotos de las propiedades y la bandeja de consultas se suman en los próximos pasos.
       </p>
     </>
   );

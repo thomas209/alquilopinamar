@@ -13,7 +13,8 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system y la pri
 | 2. Design system (componentes base) | Hecho, en `main` |
 | 3. Schema Fase 1 + migración inicial + datos iniciales | Hecho, en la rama `admin-base` |
 | 4a. Admin: login, zonas y amenities | Hecho y probado, en la rama `admin-base` (falta unirla a `main`) |
-| 4b. Admin: formulario de propiedad con fotos | **Siguiente** |
+| 4b. Admin: propiedades (listado, formulario, publicar, pausar, duplicar, dar de baja) | Hecho en la rama `admin-base`; falta probarlo en la Mac |
+| 4c. Admin: fotos de las propiedades (necesita Cloudinary) | **Siguiente** |
 | 5. Sitio público: header, home con buscador, listado con filtros, ficha | Pendiente |
 | 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | Pendiente |
 | 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Pendiente |
@@ -55,11 +56,13 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - Login en `/admin/login` con usuario y contraseña (usuario de Tommy ya creado en la base local).
 - `proxy.ts` protege `/admin` y `/api/admin`.
 - Inicio con números, y alta / edición / borrado de zonas y amenities.
+- Propiedades: listado con buscador y filtros, formulario completo (datos, ubicación, características, amenities, precio, tarifas, reglas, destacado), publicar, pausar, duplicar y dar de baja.
 
 ## Qué falta desarrollar
 
 ### Fase 1 — lo que queda
-- **Admin de propiedades:** listado con buscador y filtros; formulario con datos, ubicación, fotos (subida múltiple y orden), amenities, precio y tarifas, reglas; publicar, pausar, duplicar, dar de baja; destacadas y hero de la home.
+- **Fotos de las propiedades:** subida múltiple a Cloudinary, orden arrastrando, portada. Hasta que estén, ninguna propiedad se puede publicar (la regla pide 5 fotos). Al sumarlas, hacer que "Duplicar" copie también las fotos.
+- **Admin:** editar el hero de la home; elegir punto en el mapa en vez de escribir latitud y longitud.
 - **Sitio público:** header y menú en pastilla, home con buscador, listado con filtros y orden, ficha con galería y barra fija de consulta, páginas por zona.
 - **Consultas:** formulario en hoja, botón de WhatsApp, mail de aviso (Resend), bandeja en el admin.
 - **SEO:** metadata por página, JSON-LD, imágenes OG, sitemap, robots, llms.txt.

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Boton from "@/components/ui/Boton";
 import { Campo } from "@/components/ui/Campo";
+import Logo from "@/components/site/Logo";
 import Rotulo from "@/components/ui/Rotulo";
 
 export default function AdminLoginPage() {
@@ -32,6 +33,7 @@ export default function AdminLoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[400px] flex-col justify-center px-4 py-10">
+      <Logo pieza="isotipo" alto={52} prioridad className="mb-6 self-start" />
       <Rotulo como="p">AlquiloPinamar · Admin</Rotulo>
       <h1 className="mt-3 font-titulo text-[34px] leading-[1.08] font-semibold tracking-[-0.02em]">Ingresar</h1>
       <form onSubmit={entrar} className="mt-8 flex flex-col gap-3.5">

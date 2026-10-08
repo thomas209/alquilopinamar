@@ -10,6 +10,12 @@ export const TAMANO_OG = { width: 1200, height: 630 };
 
 const fuente = (archivo: string) => readFile(join(process.cwd(), "assets/fonts", archivo));
 
+// Logo horizontal como data URI (assets/marca): 1400x360
+async function logo(): Promise<string> {
+  const png = await readFile(join(process.cwd(), "assets/marca/logo-horizontal.png"));
+  return "data:image/png;base64," + png.toString("base64");
+}
+
 async function fuentes() {
   const [titulo, texto, rotulo] = await Promise.all([
     fuente("instrument-sans-latin-600-normal.woff"),
@@ -30,19 +36,20 @@ function Rotulo({ children, color = GRIS }: { children: string; color?: string }
   return <div style={{ fontFamily: "DM Mono", fontSize: 22, letterSpacing: "0.1em", color, display: "flex" }}>{children.toUpperCase()}</div>;
 }
 
-function Marca({ claro = false }: { claro?: boolean }) {
-  return <div style={{ fontFamily: "Instrument Sans", fontSize: 34, letterSpacing: "-0.02em", color: claro ? "#FFFFFF" : NEGRO, display: "flex" }}>{SITE_NOMBRE}</div>;
+function Marca({ src, alto }: { src: string; alto: number }) {
+  // eslint-disable-next-line @next/next/no-img-element -- ImageResponse no usa next/image
+  return <img src={src} alt={SITE_NOMBRE} height={alto} width={Math.round((alto * 1400) / 360)} style={{ height: alto, width: Math.round((alto * 1400) / 360) }} />;
 }
 
 // Version sin foto: fondo blanco, titulo grande. La usa el sitio en general
 // y cualquier pagina que no tenga una foto propia.
-function SinFoto({ rotulo, titulo, pie }: { rotulo: string; titulo: string; pie: string }) {
+function SinFoto({ rotulo, titulo, pie, marca }: { rotulo: string; titulo: string; pie: string; marca: string }) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#FFFFFF", padding: "72px 80px", fontFamily: "Inter" }}>
       <Rotulo>{rotulo}</Rotulo>
       <div style={{ fontFamily: "Instrument Sans", fontSize: titulo.length > 22 ? 84 : 104, lineHeight: 1.02, letterSpacing: "-0.03em", color: NEGRO, display: "flex", maxWidth: 1000 }}>{titulo}</div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Marca />
+        <Marca src={marca} alto={64} />
         <div style={{ display: "flex", background: NEGRO, color: "#FFFFFF", borderRadius: 999, padding: "16px 30px", fontSize: 24 }}>{pie}</div>
       </div>
     </div>
@@ -50,7 +57,7 @@ function SinFoto({ rotulo, titulo, pie }: { rotulo: string; titulo: string; pie:
 }
 
 // Version con foto de borde a borde y una tarjeta blanca abajo (como el hero del sitio).
-function ConFoto({ foto, rotulo, titulo, pie }: { foto: string; rotulo: string; titulo: string; pie: string }) {
+function ConFoto({ foto, rotulo, titulo, pie, marca }: { foto: string; rotulo: string; titulo: string; pie: string; marca: string }) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", background: "#EDEDED", fontFamily: "Inter" }}>
       {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse no usa next/image */}
@@ -60,8 +67,8 @@ function ConFoto({ foto, rotulo, titulo, pie }: { foto: string; rotulo: string; 
         <div style={{ fontFamily: "Instrument Sans", fontSize: titulo.length > 18 ? 64 : 80, lineHeight: 1.04, letterSpacing: "-0.03em", color: NEGRO, marginTop: 14, display: "flex" }}>{titulo}</div>
         <div style={{ fontSize: 24, color: GRIS, marginTop: 14, display: "flex" }}>{pie}</div>
       </div>
-      <div style={{ position: "absolute", top: 40, right: 48, display: "flex", background: "rgba(10,10,10,0.78)", borderRadius: 999, padding: "12px 24px" }}>
-        <div style={{ fontFamily: "Instrument Sans", fontSize: 26, letterSpacing: "-0.02em", color: "#FFFFFF", display: "flex" }}>{SITE_NOMBRE}</div>
+      <div style={{ position: "absolute", top: 40, right: 48, display: "flex", background: "rgba(255,255,255,0.92)", borderRadius: 999, padding: "12px 22px" }}>
+        <Marca src={marca} alto={40} />
       </div>
     </div>
   );
@@ -69,8 +76,13 @@ function ConFoto({ foto, rotulo, titulo, pie }: { foto: string; rotulo: string; 
 
 export async function imagenOg(datos: { rotulo?: string; titulo: string; pie: string; foto?: string | null }) {
   const rotulo = datos.rotulo ?? ZONAS_TEXTO;
+  const [marca, fonts] = await Promise.all([logo(), fuentes()]);
   return new ImageResponse(
-    datos.foto ? <ConFoto foto={datos.foto} rotulo={rotulo} titulo={datos.titulo} pie={datos.pie} /> : <SinFoto rotulo={rotulo} titulo={datos.titulo} pie={datos.pie} />,
-    { ...TAMANO_OG, fonts: await fuentes() },
+    datos.foto ? (
+      <ConFoto foto={datos.foto} rotulo={rotulo} titulo={datos.titulo} pie={datos.pie} marca={marca} />
+    ) : (
+      <SinFoto rotulo={rotulo} titulo={datos.titulo} pie={datos.pie} marca={marca} />
+    ),
+    { ...TAMANO_OG, fonts },
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/site/Logo";
 import Rotulo from "@/components/ui/Rotulo";
 import { OPERACIONES_URL } from "@/lib/busqueda";
 import { EMPRESA } from "@/lib/empresa";
@@ -38,8 +39,8 @@ export default async function Footer() {
     <footer className="mt-20 border-t border-gris-200 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-10 px-4 py-12 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:px-12 md:py-16">
         <div className="col-span-2 md:col-span-1">
-          <p className="font-titulo text-[19px] font-semibold tracking-[-0.02em]">{EMPRESA.nombre}</p>
-          <p className="mt-2 max-w-[36ch] text-[14px] leading-relaxed text-texto-2">Alquiler temporario, alquiler anual y venta de propiedades en Pinamar y alrededores.</p>
+          <Logo alto={40} />
+          <p className="mt-4 max-w-[36ch] text-[14px] leading-relaxed text-texto-2">Alquiler temporario, alquiler anual y venta de propiedades en Pinamar y alrededores.</p>
           {EMPRESA.instagram && (
             <a href={"https://instagram.com/" + EMPRESA.instagram} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-[14px] text-link">
               @{EMPRESA.instagram}

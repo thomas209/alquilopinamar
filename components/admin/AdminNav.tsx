@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import Logo from "@/components/site/Logo";
 import { cn } from "@/lib/cn";
 
 const SECCIONES = [
@@ -18,7 +19,8 @@ export default function AdminNav({ nombre, consultasNuevas }: { nombre: string; 
   return (
     <header className="vidrio-header sticky top-0 z-50 border-b border-gris-200">
       <div className="mx-auto flex h-14 max-w-[1200px] items-center gap-3 px-4 md:px-8">
-        <Link href="/admin" className="shrink-0 font-titulo text-[16px] font-semibold tracking-[-0.02em]">
+        <Link href="/admin" className="flex shrink-0 items-center gap-2 font-titulo text-[16px] font-semibold tracking-[-0.02em]">
+          <Logo pieza="isotipo" alto={26} />
           Admin
         </Link>
         <nav

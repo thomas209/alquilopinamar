@@ -13,7 +13,7 @@ type Base = {
 };
 
 type ComoBoton = Base & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children"> & { href?: undefined };
-type ComoLink = Base & { href: string; target?: string; rel?: string; "aria-label"?: string };
+type ComoLink = Base & { href: string; target?: string; rel?: string; "aria-label"?: string; onClick?: React.MouseEventHandler<HTMLAnchorElement> };
 
 const TAMANOS: Record<Tamano, string> = {
   chico: "h-11 px-5 text-[14px]",

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Consultar, { ContarVista, type PropiedadConsulta } from "@/components/site/Consultar";
 import Galeria from "@/components/site/Galeria";
 import PropiedadCard from "@/components/site/PropiedadCard";
 import TextoPlegable from "@/components/site/TextoPlegable";
-import Boton from "@/components/ui/Boton";
 import Icono from "@/components/ui/Icono";
 import Precio from "@/components/ui/Precio";
 import Rotulo from "@/components/ui/Rotulo";
@@ -77,16 +77,11 @@ export default async function PropiedadPage({ params }: Props) {
     p.petsAllowed ? "Se aceptan mascotas" : "No se aceptan mascotas",
   ].filter((x): x is string => Boolean(x));
 
-  const contacto = whatsapp ? (
-    <Boton href={whatsapp} target="_blank" rel="noopener noreferrer" ancho>
-      Consultar por WhatsApp
-    </Boton>
-  ) : (
-    <p className="text-[13px] text-texto-2">Para consultar mencioná el código {codigo}.</p>
-  );
+  const consulta: PropiedadConsulta = { slug: p.slug, codigo, title: p.title, operation: p.operation, maxGuests: p.maxGuests, minNights: p.minNights };
 
   return (
     <div className="mx-auto max-w-[1440px] pb-28 md:px-12 md:pt-6 md:pb-0">
+      <ContarVista slug={p.slug} />
       <Galeria fotos={p.fotos} titulo={p.title} />
 
       <div className="px-4 md:grid md:grid-cols-[minmax(0,1fr)_380px] md:gap-16 md:px-0">
@@ -178,7 +173,9 @@ export default async function PropiedadPage({ params }: Props) {
             <p className="mt-1 text-[14px] text-texto-2">
               {etiquetaDe(OPERACIONES, p.operation)} · {p.zona.name}
             </p>
-            <div className="mt-5">{contacto}</div>
+            <div className="mt-5">
+              <Consultar propiedad={consulta} whatsapp={whatsapp} variante="panel" />
+            </div>
           </div>
         </aside>
       </div>
@@ -198,7 +195,9 @@ export default async function PropiedadPage({ params }: Props) {
       <div className="vidrio-barra fixed inset-x-0 bottom-0 z-30 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] md:hidden">
         <div className="flex items-center justify-between gap-4">
           <Precio monto={p.price} moneda={p.currency} periodo={p.pricePeriod} className="shrink-0 text-[17px]" />
-          <div className="min-w-0 flex-1 text-right">{whatsapp ? <Boton href={whatsapp} target="_blank" rel="noopener noreferrer" tamano="chico">Consultar</Boton> : <Rotulo>{codigo}</Rotulo>}</div>
+          <div className="min-w-0 flex-1">
+            <Consultar propiedad={consulta} whatsapp={whatsapp} variante="barra" />
+          </div>
         </div>
       </div>
     </div>

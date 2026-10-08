@@ -1,6 +1,6 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 8 de octubre de 2026.
+> Última actualización: 8 de octubre de 2026 (paso 6).
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
@@ -15,29 +15,31 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admi
 | 4a. Admin: login, zonas y amenities | Hecho y probado, en `main` |
 | 4b. Admin: propiedades (listado, formulario, publicar, pausar, duplicar, dar de baja) | Hecho y probado, en `main` |
 | 4c. Admin: fotos de las propiedades (subir, ordenar, portada, borrar) | Hecho y probado, en `main` |
-| 5. Sitio público: header, home con buscador, listado con filtros, ficha, páginas por zona | **En curso.** Hecho en la rama `sitio-publico` (más filtros, "Ver más", descripción plegable y páginas por zona sumados el 8/10). Falta la revisión de Tommy, sobre todo en celular |
-| 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | Pendiente |
+| 5. Sitio público: header, home con buscador, listado con filtros, ficha, páginas por zona | Hecho y revisado en celular. PR #4 abierto (`sitio-publico` → `main`), falta que Tommy lo una |
+| 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | **Hecho en la rama `consultas`**, sin probar con la base. Falta: `npm install`, prueba de Tommy y la cuenta de Resend |
 | 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Pendiente |
 | 8. Páginas institucionales, métricas, revisión en celular y publicación | Pendiente |
 
 ## Por dónde seguir (retomar acá)
 
-Rama de trabajo: **`sitio-publico`**. Lo último hecho: "Más filtros" (precio, baños, distancia al mar, cochera y comodidades), "Ver más" en el listado, descripción plegable en la ficha y páginas por zona (`/zonas/[slug]`). Tipos y lint pasan; falta probarlo con datos en la Mac.
+Rama de trabajo: **`consultas`** (sale de `sitio-publico`). Lo último hecho: el paso 6 completo. Tipos, lint y pruebas de validación pasan; la hoja de consulta se probó en tamaño celular. Falta probarlo con la base en la Mac.
 
-1. Tommy mira el sitio (`npm run dev`) en escritorio y **en celular**, y dice qué cambiar. En tamaño celular no se pudo revisar desde Claude.
-2. Aplicar esos cambios y completar lo que falta del paso 5 (ver "Qué falta desarrollar").
-3. Subir los commits nuevos (`git push`; la rama ya existe en GitHub), crear el pull request y unir a `main` (el *Merge* lo hace Tommy).
-4. Seguir con el paso 6: consultas.
+1. Tommy une el PR #4 (`sitio-publico` → `main`).
+2. Tommy corre `npm install` (hay dos dependencias nuevas: `resend` y `@react-email/components`) y prueba: mandar una consulta desde una ficha, verla en `/admin/consultas`, cambiarle el estado y responderla.
+3. Claude abre el PR de `consultas` → `main` (el *Merge* lo hace Tommy).
+4. Cuando esté la cuenta de Resend: cargar `RESEND_API_KEY` y `ADMIN_EMAIL` en el `.env` y probar que llegue el mail.
+5. Seguir con el paso 7: SEO.
 
 ## Lo próximo que tiene que hacer Tommy
 
-1. **Revisar el sitio público** en el celular y en la compu: home (`/`), listado (`/propiedades`, probar "Más filtros"), ficha (`/propiedad/casa-frente-al-mar-ap-0001`) y una zona (`/zonas/pinamar`).
-2. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
-3. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
-4. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
-5. **Pasar el logo en un archivo aparte** si es el definitivo, para ponerlo en el header.
-6. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
-7. **Conseguir cuando se pueda:** dominio definitivo y número de WhatsApp del sitio. No frenan el desarrollo.
+1. **Unir el PR #4, correr `npm install` y probar las consultas** (ver arriba).
+2. **Crear la cuenta de Resend** con thomascaronia@gmail.com y cargar en el `.env`: `RESEND_API_KEY` (resend.com → API Keys) y `ADMIN_EMAIL=thomascaronia@gmail.com`. No pasar la clave por el chat.
+3. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
+4. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
+5. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
+6. **Pasar el logo en un archivo aparte** si es el definitivo, para ponerlo en el header.
+7. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
+8. **Conseguir cuando se pueda:** dominio definitivo y número de WhatsApp del sitio. No frenan el desarrollo.
 
 ## Qué está hecho
 
@@ -68,7 +70,7 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - Fotos: subida múltiple a Cloudinary, orden (arrastrando o con flechas), portada y borrado.
 - Propiedades: listado con buscador y filtros, formulario completo (datos, ubicación, características, amenities, precio, tarifas, reglas, destacado), publicar, pausar, duplicar y dar de baja.
 
-### Sitio público (primera versión, rama `sitio-publico`)
+### Sitio público (PR #4)
 - Header fijo translúcido con menú en pastilla (Alquilar · Anual · Comprar) que se esconde al bajar, y footer.
 - Home: portada con buscador (operación, zona, tipo), destacadas, recién publicadas y zonas. La portada usa la primera foto de la primera destacada.
 - Listado `/propiedades`: filtros por operación, zona, tipo, dormitorios, pileta y mascotas, y orden. Todo en la URL.
@@ -78,12 +80,19 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - Páginas por zona `/zonas/[slug]`: portada, texto de la zona, accesos por operación con cantidad, propiedades de la zona y otras zonas. La home, el footer y la ficha linkean ahí.
 - Archivos: `lib/sitio.ts` (consultas con caché), `lib/busqueda.ts` (filtros ↔ URL), `lib/whatsapp.ts`, `components/site/`.
 
+### Consultas (rama `consultas`)
+- Ficha: botón "Consultar" que abre una hoja con el formulario (en alquiler temporario pide fechas y huéspedes; la salida se completa sola con la estadía mínima). Recuerda nombre, mail y teléfono en el navegador. WhatsApp como segundo botón (redondo en la barra del celular).
+- `POST /api/consultas`: valida, campo trampa contra robots, máximo 5 por hora por mail o IP (la IP se guarda como hash), solo propiedades publicadas.
+- Mail de aviso al admin con Resend + React Email (`emails/ConsultaNuevaEmail.tsx`), con "Responder" directo a quien consultó. Sale después de responder, así la persona no espera; si falla o falta la clave, la consulta se guarda igual.
+- `POST /api/propiedades/[slug]/evento`: cuenta visitas (una por sesión) y clics en WhatsApp. Ignora robots.
+- Admin `/admin/consultas`: bandeja con pestañas por estado y buscador (nombre, mail o código). Detalle con mensaje, datos, estadía, propiedad, "Responder por mail" / "por WhatsApp" (arma el mensaje y pasa la consulta a Respondida), estado y notas internas. Contador de nuevas en el menú y en el inicio.
+- Variables nuevas en `.env.example`: `NEXT_PUBLIC_WHATSAPP`, `RESEND_API_KEY`, `ADMIN_EMAIL`, `RESEND_FROM_EMAIL`.
+
 ## Qué falta desarrollar
 
 ### Fase 1 — lo que queda
 - **Admin:** editar el hero de la home; elegir punto en el mapa en vez de escribir latitud y longitud.
 - **Sitio público (lo que queda):** portada de la home editable, foto de portada por zona desde el admin, logo en el header y ajustes que salgan de la revisión en celular.
-- **Consultas:** formulario en hoja, botón de WhatsApp, mail de aviso (Resend), bandeja en el admin.
 - **SEO:** metadata por página, JSON-LD, imágenes OG, sitemap, robots, llms.txt.
 - **Cierre:** quiénes somos, contacto, términos, métricas básicas, prueba completa en celular.
 - **Publicación:** proyecto en Vercel, base nueva en Railway (nunca la de Member), variables de entorno, `npm run db:deploy-prod`, backup diario con GitHub Actions, dominio.

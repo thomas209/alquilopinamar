@@ -7,12 +7,13 @@ import { cn } from "@/lib/cn";
 const SECCIONES = [
   { href: "/admin", etiqueta: "Inicio" },
   { href: "/admin/propiedades", etiqueta: "Propiedades" },
+  { href: "/admin/consultas", etiqueta: "Consultas" },
   { href: "/admin/zonas", etiqueta: "Zonas" },
   { href: "/admin/amenities", etiqueta: "Amenities" },
 ];
 
 // Barra de arriba del admin: secciones en pastillas (se deslizan de costado en el celular) y salir.
-export default function AdminNav({ nombre }: { nombre: string }) {
+export default function AdminNav({ nombre, consultasNuevas }: { nombre: string; consultasNuevas: number }) {
   const pathname = usePathname();
   return (
     <header className="vidrio-header sticky top-0 z-50 border-b border-gris-200">
@@ -37,6 +38,17 @@ export default function AdminNav({ nombre }: { nombre: string }) {
                 )}
               >
                 {s.etiqueta}
+                {s.href === "/admin/consultas" && consultasNuevas > 0 && (
+                  <span
+                    className={cn(
+                      "ml-1.5 inline-grid h-[18px] min-w-[18px] place-items-center rounded-pastilla px-1 text-[11px] leading-none font-semibold tabular-nums",
+                      activa ? "bg-blanco text-negro" : "bg-negro text-blanco",
+                    )}
+                  >
+                    {consultasNuevas > 99 ? "99+" : consultasNuevas}
+                    <span className="sr-only">{consultasNuevas === 1 ? " nueva" : " nuevas"}</span>
+                  </span>
+                )}
               </Link>
             );
           })}

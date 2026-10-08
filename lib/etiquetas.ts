@@ -23,6 +23,12 @@ export const ESTADOS = [
   { valor: "RECHAZADA", etiqueta: "Rechazada", tono: "error" },
 ] as const;
 
+export const ESTADOS_CONSULTA = [
+  { valor: "NUEVA", etiqueta: "Nueva", plural: "Nuevas", tono: "negro" },
+  { valor: "RESPONDIDA", etiqueta: "Respondida", plural: "Respondidas", tono: "ok" },
+  { valor: "CERRADA", etiqueta: "Cerrada", plural: "Cerradas", tono: "neutro" },
+] as const;
+
 export const PERIODOS = [
   { valor: "NOCHE", etiqueta: "Por noche" },
   { valor: "SEMANA", etiqueta: "Por semana" },
@@ -40,6 +46,7 @@ export const MONEDAS = [
 export type Operacion = (typeof OPERACIONES)[number]["valor"];
 export type Tipo = (typeof TIPOS)[number]["valor"];
 export type Estado = (typeof ESTADOS)[number]["valor"];
+export type EstadoConsulta = (typeof ESTADOS_CONSULTA)[number]["valor"];
 export type PeriodoPrecio = (typeof PERIODOS)[number]["valor"];
 export type MonedaPrecio = (typeof MONEDAS)[number]["valor"];
 

@@ -22,7 +22,7 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admi
 
 ## Publicación: estado
 
-- **Railway:** proyecto `alquilopinamar` creado (8/10) con Postgres en **US East (Virginia)**, la misma región que Vercel. Acceso público por TCP activado (`DATABASE_PUBLIC_URL`). Base vacía: todavía sin tablas.
+- **Railway:** proyecto `alquilopinamar` creado (8/10) con Postgres en **US East (Virginia)**, la misma región que Vercel. Acceso público por TCP activado (`DATABASE_PUBLIC_URL`). **Base lista (8/10):** migración `init` aplicada con `db:deploy-prod`, 5 zonas y 12 amenities cargados y usuario del admin creado con `db:preparar-prod`.
 - **`.env.prod-db`** ya está en la Mac de Tommy (permisos 600, ignorado por git).
 - **Vercel:** sin crear. Se crea cuando `main` tenga el sitio (PRs unidos).
 - **Secretos:** las claves y contraseñas (URL de la base, `NEXTAUTH_SECRET`, Cloudinary, Resend, secreto de GitHub) las carga Tommy: Claude no escribe credenciales en formularios web.

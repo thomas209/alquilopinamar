@@ -57,7 +57,7 @@ export default async function HomePage() {
         <h2 className="font-titulo text-[26px] font-semibold tracking-[-0.02em] md:text-[32px]">Zonas</h2>
         <div className="mt-5 flex flex-wrap gap-2">
           {zonas.map((z) => (
-            <Boton key={z.slug} href={"/propiedades?zona=" + z.slug} variante="secundario" tamano="chico">
+            <Boton key={z.slug} href={"/zonas/" + z.slug} variante="secundario" tamano="chico">
               {z.name}
             </Boton>
           ))}

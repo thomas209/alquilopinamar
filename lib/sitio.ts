@@ -16,6 +16,14 @@ export type FiltrosListado = {
   pileta?: boolean;
   mascotas?: boolean;
   orden?: Orden;
+  moneda?: MonedaPrecio; // obligatoria para filtrar por precio (no se convierte USD <-> ARS)
+  precioMin?: number;
+  precioMax?: number;
+  banos?: number; // minimo
+  cochera?: boolean;
+  marHasta?: number; // metros
+  comodidades?: string[]; // slugs: tiene que tener todas
+  limite?: number;
 };
 
 export type CardPropiedad = {
@@ -39,7 +47,7 @@ export type CardPropiedad = {
 };
 
 const PUBLICA = { status: "PUBLICADA", deletedAt: null } as const;
-const MAX_LISTADO = 60;
+const MAX_LISTADO = 240;
 
 const SELECT_CARD = {
   id: true,
@@ -102,22 +110,36 @@ function ordenDe(orden: Orden | undefined): Prisma.PropertyOrderByWithRelationIn
 const cache = <A extends unknown[], R>(fn: (...a: A) => Promise<R>, clave: string) =>
   unstable_cache(fn, ["sitio", clave], { tags: [TAG_SITIO], revalidate: 600 });
 
-export const listarPropiedades = cache(async (f: FiltrosListado): Promise<CardPropiedad[]> => {
-  const filas = await prisma.property.findMany({
-    where: {
-      ...PUBLICA,
-      ...(f.operacion ? { operation: f.operacion } : {}),
-      ...(f.tipo ? { type: f.tipo } : {}),
-      ...(f.zona ? { zone: { slug: f.zona } } : {}),
-      ...(f.dormitorios ? { bedrooms: { gte: f.dormitorios } } : {}),
-      ...(f.pileta ? { hasPool: true } : {}),
-      ...(f.mascotas ? { petsAllowed: true } : {}),
-    },
-    orderBy: ordenDe(f.orden),
-    take: MAX_LISTADO,
-    select: SELECT_CARD,
-  });
-  return filas.map(aCard);
+function whereListado(f: FiltrosListado): Prisma.PropertyWhereInput {
+  const precio =
+    f.moneda && (f.precioMin || f.precioMax)
+      ? { price: { ...(f.precioMin ? { gte: f.precioMin } : {}), ...(f.precioMax ? { lte: f.precioMax } : {}) }, priceOnRequest: false }
+      : {};
+  return {
+    ...PUBLICA,
+    ...(f.operacion ? { operation: f.operacion } : {}),
+    ...(f.tipo ? { type: f.tipo } : {}),
+    ...(f.zona ? { zone: { slug: f.zona } } : {}),
+    ...(f.dormitorios ? { bedrooms: { gte: f.dormitorios } } : {}),
+    ...(f.banos ? { bathrooms: { gte: f.banos } } : {}),
+    ...(f.cochera ? { garages: { gte: 1 } } : {}),
+    ...(f.marHasta ? { distanceToSeaM: { lte: f.marHasta } } : {}),
+    ...(f.pileta ? { hasPool: true } : {}),
+    ...(f.mascotas ? { petsAllowed: true } : {}),
+    ...(f.moneda ? { currency: f.moneda } : {}),
+    ...precio,
+    ...(f.comodidades?.length ? { AND: f.comodidades.map((slug) => ({ amenities: { some: { amenity: { slug } } } })) } : {}),
+  };
+}
+
+// Devuelve la tanda pedida y el total de resultados (para "Ver más").
+export const listarPropiedades = cache(async (f: FiltrosListado): Promise<{ propiedades: CardPropiedad[]; total: number }> => {
+  const where = whereListado(f);
+  const [filas, total] = await Promise.all([
+    prisma.property.findMany({ where, orderBy: ordenDe(f.orden), take: Math.min(f.limite ?? 24, MAX_LISTADO), select: SELECT_CARD }),
+    prisma.property.count({ where }),
+  ]);
+  return { propiedades: filas.map(aCard), total };
 }, "listado");
 
 export const destacadas = cache(async (): Promise<CardPropiedad[]> => {
@@ -152,6 +174,26 @@ export const zonasActivas = cache(async () => {
     select: { slug: true, name: true },
   });
 }, "zonas");
+
+export const comodidadesActivas = cache(async () => {
+  return prisma.amenity.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: { slug: true, name: true },
+  });
+}, "comodidades");
+
+// Pagina de zona: datos de la zona + cuantas publicadas tiene por operacion.
+export const zonaPorSlug = cache(async (slug: string) => {
+  const z = await prisma.zone.findFirst({
+    where: { slug, isActive: true },
+    select: { id: true, slug: true, name: true, description: true, coverImage: true, seoTitle: true, seoDescription: true },
+  });
+  if (!z) return null;
+  const grupos = await prisma.property.groupBy({ by: ["operation"], where: { ...PUBLICA, zoneId: z.id }, _count: { _all: true } });
+  const porOperacion = Object.fromEntries(grupos.map((g) => [g.operation, g._count._all])) as Partial<Record<Operacion, number>>;
+  return { ...z, porOperacion };
+}, "zona");
 
 // Ficha completa. La direccion exacta nunca sale de aca.
 export const propiedadPorSlug = cache(async (slug: string) => {

@@ -17,7 +17,7 @@ export default async function Footer() {
           <ul className="mt-4 space-y-2 text-[15px]">
             {zonas.map((z) => (
               <li key={z.slug}>
-                <Link href={"/propiedades?zona=" + z.slug} className="hover:opacity-70">
+                <Link href={"/zonas/" + z.slug} className="hover:opacity-70">
                   {z.name}
                 </Link>
               </li>

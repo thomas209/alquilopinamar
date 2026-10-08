@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import Galeria from "@/components/site/Galeria";
 import PropiedadCard from "@/components/site/PropiedadCard";
+import TextoPlegable from "@/components/site/TextoPlegable";
 import Boton from "@/components/ui/Boton";
 import Icono from "@/components/ui/Icono";
 import Precio from "@/components/ui/Precio";
@@ -91,7 +93,11 @@ export default async function PropiedadPage({ params }: Props) {
         <div>
           <header className="py-6 md:py-8">
             <Rotulo como="p">
-              {codigo} · {p.zona.name} · {tipo}
+              {codigo} ·{" "}
+              <Link href={"/zonas/" + p.zona.slug} className="hover:text-negro">
+                {p.zona.name}
+              </Link>{" "}
+              · {tipo}
             </Rotulo>
             <h1 className="mt-3 font-titulo text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] md:text-[40px]">{p.title}</h1>
             {datos && <p className="mt-2 text-[15px] text-texto-2">{datos}</p>}
@@ -102,7 +108,7 @@ export default async function PropiedadPage({ params }: Props) {
           </header>
 
           <Seccion titulo="Descripción">
-            <p className="max-w-[68ch] text-[16px] leading-relaxed whitespace-pre-line">{p.description}</p>
+            <TextoPlegable texto={p.description} className="max-w-[68ch] text-[16px] leading-relaxed" />
           </Seccion>
 
           <Seccion titulo="Características">

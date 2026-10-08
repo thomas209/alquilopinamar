@@ -235,6 +235,10 @@ export const propiedadPorSlug = cache(async (slug: string) => {
     checkOutTime: p.checkOutTime,
     minNights: p.minNights,
     contactWhatsapp: p.contactWhatsapp,
+    publishedAt: p.publishedAt,
+    updatedAt: p.updatedAt,
+    // Solo si el dueño eligio mostrar el punto exacto; si no, nunca sale de aca
+    ubicacionExacta: p.showExactLocation && p.lat !== null && p.lng !== null ? { lat: p.lat, lng: p.lng } : null,
     fotos: p.images,
     amenities: p.amenities.map((a) => a.amenity).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)),
     tarifas: p.rates.map((t) => ({
@@ -249,3 +253,33 @@ export const propiedadPorSlug = cache(async (slug: string) => {
 }, "ficha");
 
 export type FichaPropiedad = NonNullable<Awaited<ReturnType<typeof propiedadPorSlug>>>;
+
+// Todo lo publico para el sitemap y llms.txt (sin cache de 10 min: se pide poco).
+export const paraSitemap = unstable_cache(
+  async () => {
+    const [propiedades, zonas] = await Promise.all([
+      prisma.property.findMany({
+        where: PUBLICA,
+        orderBy: { publishedAt: "desc" },
+        select: {
+          slug: true,
+          code: true,
+          title: true,
+          operation: true,
+          type: true,
+          updatedAt: true,
+          zone: { select: { name: true } },
+          images: { orderBy: { sortOrder: "asc" }, take: 10, select: { url: true } },
+        },
+      }),
+      prisma.zone.findMany({
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: { slug: true, name: true, updatedAt: true, description: true },
+      }),
+    ]);
+    return { propiedades, zonas };
+  },
+  ["sitio", "sitemap"],
+  { tags: [TAG_SITIO], revalidate: 3600 },
+);

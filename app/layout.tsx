@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Sans, DM_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { SE_INDEXA, SITE_DESCRIPCION, SITE_NOMBRE, SITE_URL } from "@/lib/seo";
 
 // Tres tipografias con rol fijo (ver docs/05-design-system.md):
 // Inter = lectura, formularios, menu.
@@ -27,26 +28,19 @@ const dmMono = DM_Mono({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-const DESCRIPCION =
-  "Alquiler temporario, alquiler anual y venta de propiedades en Pinamar, Cariló, Valeria del Mar, Ostende y Costa Esmeralda.";
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: {
-    default: "AlquiloPinamar",
-    template: "%s | AlquiloPinamar",
-  },
-  description: DESCRIPCION,
-  openGraph: {
-    title: "AlquiloPinamar",
-    description: DESCRIPCION,
-    url: SITE_URL,
-    siteName: "AlquiloPinamar",
-    locale: "es_AR",
-    type: "website",
-  },
+  title: { default: SITE_NOMBRE, template: "%s | " + SITE_NOMBRE },
+  description: SITE_DESCRIPCION,
+  applicationName: SITE_NOMBRE,
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: { type: "website", siteName: SITE_NOMBRE, locale: "es_AR", url: "/", title: SITE_NOMBRE, description: SITE_DESCRIPCION },
+  twitter: { card: "summary_large_image" },
+  // Fuera de produccion (local, previews de Vercel) nada se indexa
+  ...(SE_INDEXA ? {} : { robots: { index: false, follow: false } }),
 };
+
+export const viewport: Viewport = { themeColor: "#FFFFFF" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

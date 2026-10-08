@@ -5,6 +5,16 @@ import PropiedadCard from "@/components/site/PropiedadCard";
 import Boton from "@/components/ui/Boton";
 import Rotulo from "@/components/ui/Rotulo";
 import { destacadas, recientes, zonasActivas } from "@/lib/sitio";
+import JsonLd from "@/components/site/JsonLd";
+import { jsonLdSitio } from "@/lib/jsonld";
+import { metadataDePagina, SITE_DESCRIPCION, SITE_NOMBRE } from "@/lib/seo";
+
+export const metadata = metadataDePagina({
+  titulo: SITE_NOMBRE + " · Alquiler y venta de propiedades en Pinamar, Cariló y la costa",
+  tituloAbsoluto: true,
+  descripcion: SITE_DESCRIPCION,
+  ruta: "/",
+});
 
 export default async function HomePage() {
   const [zonas, top, nuevas] = await Promise.all([zonasActivas(), destacadas(), recientes()]);
@@ -13,6 +23,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd datos={jsonLdSitio()} />
       <section className="relative isolate flex min-h-[78svh] items-end bg-gris-100 md:min-h-[82svh] md:items-center">
         {portada && <Foto url={portada} alt="" sizes="100vw" anchos={[800, 1200, 1600, 2400]} prioridad className="absolute inset-0 -z-10 h-full w-full object-cover" />}
         <div className="mx-auto w-full max-w-[1440px] px-4 pt-10 pb-5 md:px-12 md:py-16">

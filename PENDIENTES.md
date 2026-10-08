@@ -1,6 +1,6 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 8 de octubre de 2026 (paso 8).
+> Última actualización: 8 de octubre de 2026 (cierre de Fase 1: portadas y mapa).
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
@@ -135,10 +135,10 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 ## Qué falta desarrollar
 
 ### Fase 1 — lo que queda
-- **Admin:** editar el hero de la home; elegir punto en el mapa en vez de escribir latitud y longitud.
-- **Sitio público (lo que queda):** portada de la home editable, foto de portada por zona desde el admin, logo en el header y ajustes que salgan de la revisión en celular.
-- **Cierre:** prueba completa en celular con datos reales; Content-Security-Policy después de publicar.
-- **Publicación:** `NEXT_PUBLIC_URL` con el dominio definitivo, Google Search Console (verificar dominio y enviar el sitemap), proyecto en Vercel, base nueva en Railway (nunca la de Member), variables de entorno, `npm run db:deploy-prod`, backup diario con GitHub Actions, dominio.
+- **Hecho (PR #12):** Admin > Contenido con la portada de la home y de cada zona (se sube a Cloudinary en `alquilopinamar/portadas/`; si no hay, se usa la foto de la primera propiedad). En el admin de propiedades el punto se elige tocando el mapa. La ficha tiene la sección Ubicación con mapa: círculo aproximado salvo que se marque "mostrar ubicación exacta"; las coordenadas reales no salen del servidor. Mapas con Leaflet + CARTO, sin API key.
+- **En la Mac:** después de `git pull` correr `npm install` (se sumaron `leaflet` y `react-leaflet`).
+- **Cierre:** prueba completa en celular con datos reales; Content-Security-Policy (permitir `*.basemaps.cartocdn.com` para el mapa).
+- **Publicación:** dominio definitivo, Google Search Console.
 
 ### Fase 2
 Registro con link mágico, panel del propietario (publicar en pasos, editar, pausar, bandeja de consultas), moderación en el admin, favoritos y lista compartible, vista mapa, novedades.

@@ -16,6 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: SITE_URL + "/propiedades", lastModified: ultima, changeFrequency: "daily", priority: 0.9 },
     ...OPERACIONES_URL.map((o) => ({ url: SITE_URL + "/propiedades?operacion=" + o.url, lastModified: ultima, changeFrequency: "daily" as const, priority: 0.8 })),
     ...zonas.map((z) => ({ url: SITE_URL + "/zonas/" + z.slug, lastModified: z.updatedAt, changeFrequency: "weekly" as const, priority: 0.8 })),
+    ...["/nosotros", "/contacto"].map((r) => ({ url: SITE_URL + r, changeFrequency: "monthly" as const, priority: 0.4 })),
+    ...["/terminos", "/privacidad"].map((r) => ({ url: SITE_URL + r, changeFrequency: "yearly" as const, priority: 0.2 })),
     ...propiedades.map((p) => ({
       url: SITE_URL + "/propiedad/" + p.slug,
       lastModified: p.updatedAt,

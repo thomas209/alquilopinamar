@@ -1,6 +1,6 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 8 de octubre de 2026 (paso 7).
+> Última actualización: 8 de octubre de 2026 (paso 8).
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
@@ -17,19 +17,26 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admi
 | 4c. Admin: fotos de las propiedades (subir, ordenar, portada, borrar) | Hecho y probado, en `main` |
 | 5. Sitio público: header, home con buscador, listado con filtros, ficha, páginas por zona | Hecho y revisado en celular. PR #4 abierto (`sitio-publico` → `main`), falta que Tommy lo una |
 | 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | Hecho y probado por Tommy. PR #5 abierto (apilado sobre el #4). Falta la cuenta de Resend |
-| 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | **Hecho en la rama `seo`**, falta la prueba de Tommy |
-| 8. Páginas institucionales, métricas, revisión en celular y publicación | Pendiente |
+| 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Hecho en la rama `seo`, falta la prueba de Tommy |
+| 8. Páginas institucionales, métricas, revisión en celular y publicación | **Código hecho en la rama `cierre`.** Falta: prueba de Tommy, revisión legal, datos del titular y publicar (guía en `docs/publicacion.md`) |
 
 ## Por dónde seguir (retomar acá)
 
-Rama de trabajo: **`seo`** (sale de `consultas`). Lo último hecho: el paso 7 completo. Tipos y lint pasan; se probaron la metadata (canónicas, Open Graph completo en cada página), las imágenes para compartir, el JSON-LD y el robots de producción.
+Rama de trabajo: **`cierre`** (sale de `seo`). Lo último hecho: el código del paso 8. Tipos y lint pasan; contacto y términos se revisaron en tamaño celular; las cabeceras de seguridad se verificaron.
 
-Orden de los PR: #4 (`sitio-publico`) → #5 (`consultas`) → el de `seo`. Claude los va pasando a `main` a medida que se unen.
+Orden de los PR: #4 (`sitio-publico`) → #5 (`consultas`) → `seo` → `cierre`. Claude los va pasando a `main` a medida que se unen.
 
 1. Tommy une el #4 y el #5 (en ese orden).
-2. Tommy prueba el SEO en la Mac (ver "Cómo probar el SEO").
-3. Claude abre el PR de `seo`.
-4. Seguir con el paso 8: páginas institucionales, métricas, revisión final y publicación.
+2. Tommy prueba el SEO y el paso 8 en la Mac (ver abajo).
+3. Claude abre los PR de `seo` y `cierre`.
+4. Publicar siguiendo `docs/publicacion.md`.
+
+### Cómo probar el paso 8
+
+- `/nosotros`, `/contacto`, `/terminos`, `/privacidad` en celular y compu. El footer tiene los links nuevos.
+- Contacto muestra WhatsApp y mail solo si están cargados en el `.env` (`NEXT_PUBLIC_WHATSAPP`, `NEXT_PUBLIC_EMAIL_CONTACTO`).
+- `/admin`: visitas, clics en WhatsApp, consultas de 7 y 30 días, propiedades con más interés y últimas consultas.
+- `npm run db:seed` sigue funcionando igual (ahora usa `prisma/datos-iniciales.mjs`).
 
 ### Cómo probar el SEO
 
@@ -43,14 +50,15 @@ Orden de los PR: #4 (`sitio-publico`) → #5 (`consultas`) → el de `seo`. Clau
 
 ## Lo próximo que tiene que hacer Tommy
 
-1. **Unir los PR #4 y #5** (en ese orden) y **probar el SEO** (ver arriba).
-2. **Crear la cuenta de Resend** con thomascaronia@gmail.com y cargar en el `.env`: `RESEND_API_KEY` (resend.com → API Keys) y `ADMIN_EMAIL=thomascaronia@gmail.com`. No pasar la clave por el chat.
-3. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
-4. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
-5. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
-6. **Pasar el logo en un archivo aparte** si es el definitivo, para ponerlo en el header.
-7. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
-8. **Conseguir cuando se pueda:** dominio definitivo y número de WhatsApp del sitio. No frenan el desarrollo.
+1. **Unir los PR #4 y #5** (en ese orden) y **probar el SEO y el paso 8** (ver arriba).
+2. **Definir el titular del sitio** (persona o empresa, CUIT y domicilio) y **hacer revisar los términos y la privacidad por un abogado** (ver `docs/publicacion.md` → Textos legales).
+3. **Crear la cuenta de Resend** con thomascaronia@gmail.com y cargar en el `.env`: `RESEND_API_KEY` (resend.com → API Keys) y `ADMIN_EMAIL=thomascaronia@gmail.com`. No pasar la clave por el chat.
+4. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
+5. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
+6. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
+7. **Pasar el logo en un archivo aparte** si es el definitivo, para ponerlo en el header.
+8. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
+9. **Conseguir cuando se pueda:** dominio definitivo y número de WhatsApp del sitio. No frenan el desarrollo.
 
 ## Qué está hecho
 
@@ -108,12 +116,21 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - `sitemap.xml` (con fotos), `robots.txt` (fuera de producción todo cerrado; en producción cierra admin, panel, API y `/sistema`), `llms.txt`, páginas 404 propias.
 - Tipografías para las imágenes en `assets/fonts/` (licencia OFL).
 
+### Paso 8 (rama `cierre`)
+- Páginas `/nosotros`, `/contacto` (WhatsApp, mail, "Publicá tu propiedad" en 3 pasos y consejos de seguridad), `/terminos` y `/privacidad` (Ley 25.326 con la leyenda obligatoria de la AAIP, y Ley 24.240). Datos de contacto y del titular en `lib/empresa.ts`, desde variables de entorno.
+- Footer en 4 columnas con quiénes somos, contacto, publicar y legales. Link a privacidad en el formulario de consulta.
+- Admin: inicio con métricas (consultas 7/30 días, visitas, clics en WhatsApp, propiedades con más interés y tasa de interés, últimas consultas).
+- Cabeceras de seguridad (HSTS, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy) y sin `X-Powered-By`. `/sistema` da 404 en producción.
+- Backup diario automático: `.github/workflows/db-backup.yml` (`pg_dump` + JSON, 90 días). Se activa con el secreto `PROD_DATABASE_URL`.
+- `npm run db:preparar-prod`: carga zonas, amenities y el usuario del admin en producción (backup + confirmación, solo inserta).
+- `docs/publicacion.md`: la guía completa para publicar (Railway, Vercel, dominio, Resend, backups, Google y prueba final).
+
 ## Qué falta desarrollar
 
 ### Fase 1 — lo que queda
 - **Admin:** editar el hero de la home; elegir punto en el mapa en vez de escribir latitud y longitud.
 - **Sitio público (lo que queda):** portada de la home editable, foto de portada por zona desde el admin, logo en el header y ajustes que salgan de la revisión en celular.
-- **Cierre:** quiénes somos, contacto, términos, métricas básicas, prueba completa en celular.
+- **Cierre:** prueba completa en celular con datos reales; Content-Security-Policy después de publicar.
 - **Publicación:** `NEXT_PUBLIC_URL` con el dominio definitivo, Google Search Console (verificar dominio y enviar el sitemap), proyecto en Vercel, base nueva en Railway (nunca la de Member), variables de entorno, `npm run db:deploy-prod`, backup diario con GitHub Actions, dominio.
 
 ### Fase 2
@@ -171,4 +188,3 @@ npm run dev          # levanta el sitio en http://localhost:3000
 
 - Actualizar Next en **Member** (sigue en 16.2.9, con avisos críticos). Es un tema de Member, no de este proyecto.
 - Sacar `referencia-member/` de la carpeta cuando ya no se consulte.
-- Borrar la página `/sistema` o dejarla solo para desarrollo antes de publicar.

@@ -14,6 +14,7 @@
     "db:backup": "node scripts/db-backup.mjs",
     "db:copy-to-local": "node scripts/db-copy-prod-to-local.mjs",
     "db:deploy-prod": "node scripts/db-deploy-prod.mjs",
+    "db:preparar-prod": "node scripts/db-preparar-prod.mjs",
     "db:seed": "node scripts/db-guard.mjs && node prisma/seed.mjs",
     "admin:crear": "node scripts/db-guard.mjs && node scripts/crear-admin.mjs"
   },

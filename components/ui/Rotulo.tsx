@@ -8,7 +8,7 @@ export default function Rotulo({
   className,
 }: {
   children: React.ReactNode;
-  tono?: "normal" | "rojo" | "negro";
+  tono?: "normal" | "rojo" | "negro" | "claro"; // claro = sobre fondo negro
   como?: "span" | "p" | "div";
   className?: string;
 }) {
@@ -19,6 +19,7 @@ export default function Rotulo({
         tono === "normal" && "text-texto-2",
         tono === "rojo" && "text-error",
         tono === "negro" && "text-negro",
+        tono === "claro" && "text-blanco/60",
         className,
       )}
     >

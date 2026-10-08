@@ -8,6 +8,8 @@ import { PastillaEstado, PastillaFiltro } from "@/components/ui/Pastilla";
 import Rotulo from "@/components/ui/Rotulo";
 import Segmentado from "@/components/ui/Segmentado";
 import FotosPropiedad, { type FotoAdmin } from "@/components/admin/FotosPropiedad";
+import { MapaElegir } from "@/components/mapa";
+import { CENTRO_PARTIDO, CENTRO_ZONA } from "@/lib/mapa-datos";
 import {
   ESTADOS,
   MONEDAS,
@@ -142,12 +144,14 @@ export default function PropiedadForm({
   amenities,
   propiedad,
 }: {
-  zonas: { id: string; name: string }[];
+  zonas: { id: string; name: string; slug: string }[];
   amenities: { id: string; name: string }[];
   propiedad: Existente | null;
 }) {
   const router = useRouter();
   const [v, setV] = useState<ValoresPropiedad>(propiedad?.valores ?? { ...VACIA, zoneId: zonas[0]?.id ?? "" });
+  const punto = v.lat !== "" && v.lng !== "" && Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.lng)) ? { lat: Number(v.lat), lng: Number(v.lng) } : null;
+  const centroMapa = CENTRO_ZONA[zonas.find((z) => z.id === v.zoneId)?.slug ?? ""] ?? CENTRO_PARTIDO;
   const [error, setError] = useState("");
   const [aviso, setAviso] = useState("");
   const [ocupado, setOcupado] = useState(false);
@@ -298,8 +302,24 @@ export default function PropiedadForm({
       <Bloque titulo="Ubicación" ayuda="La dirección es privada: no aparece en la ficha. El mapa muestra una zona aproximada, salvo que marques el punto exacto.">
         <div className="grid gap-4 md:grid-cols-2">
           <Campo className="md:col-span-2" etiqueta="Dirección" value={v.address} onChange={texto("address")} maxLength={200} placeholder="Calle y número" />
-          <Campo etiqueta="Latitud" value={v.lat} onChange={texto("lat")} inputMode="decimal" placeholder="-37.1650" />
-          <Campo etiqueta="Longitud" value={v.lng} onChange={texto("lng")} inputMode="decimal" placeholder="-56.9030" />
+          <div className="md:col-span-2">
+            <div className="mb-[7px] flex items-baseline justify-between gap-3">
+              <Rotulo>Punto en el mapa</Rotulo>
+              {punto ? (
+                <button type="button" onClick={() => setV((x) => ({ ...x, lat: "", lng: "" }))} className="text-[13px] text-link">
+                  Quitar punto
+                </button>
+              ) : (
+                <span className="text-[13px] text-texto-2">Tocá el mapa para marcarlo</span>
+              )}
+            </div>
+            <div className="relative isolate h-[340px] overflow-hidden rounded-card border border-gris-200 md:h-[400px]">
+              <MapaElegir valor={punto} centro={centroMapa} onChange={(p) => setV((x) => ({ ...x, lat: p.lat.toFixed(6), lng: p.lng.toFixed(6) }))} />
+            </div>
+            <p className="mt-1.5 text-[13px] text-texto-2">
+              {punto ? "Podés arrastrar el punto para ajustarlo. " + punto.lat.toFixed(5) + ", " + punto.lng.toFixed(5) : "Sin punto, la ficha no muestra mapa."}
+            </p>
+          </div>
           <Campo etiqueta="Distancia al mar (metros)" value={v.distanceToSeaM} onChange={texto("distanceToSeaM")} type="number" min={0} />
           <div className="flex items-end">
             <Tilde marcado={v.showExactLocation} onChange={(x) => set("showExactLocation", x)}>

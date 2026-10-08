@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Consultar, { ContarVista, type PropiedadConsulta } from "@/components/site/Consultar";
 import Galeria from "@/components/site/Galeria";
+import { MapaVer } from "@/components/mapa";
 import PropiedadCard from "@/components/site/PropiedadCard";
 import TextoPlegable from "@/components/site/TextoPlegable";
 import Icono, { type NombreIcono } from "@/components/ui/Icono";
@@ -150,6 +151,19 @@ export default async function PropiedadPage({ params }: Props) {
                   </li>
                 ))}
               </ul>
+            </Seccion>
+          )}
+
+          {p.ubicacion && (
+            <Seccion titulo="Ubicación">
+              <div className="relative isolate h-[300px] overflow-hidden rounded-card bg-gris-100 md:h-[380px]">
+                <MapaVer lat={p.ubicacion.lat} lng={p.ubicacion.lng} exacta={p.ubicacion.exacta} />
+              </div>
+              <p className="mt-3 text-[14px] text-texto-2">
+                {p.zona.name}
+                {p.distanceToSeaM !== null ? " · " + (p.distanceToSeaM >= 1000 ? (p.distanceToSeaM / 1000).toLocaleString("es-AR", { maximumFractionDigits: 1 }) + " km" : p.distanceToSeaM + " m") + " del mar" : ""}
+                {p.ubicacion.exacta ? "" : ". La ubicación es aproximada: la dirección exacta te la pasa quien publica."}
+              </p>
             </Seccion>
           )}
 

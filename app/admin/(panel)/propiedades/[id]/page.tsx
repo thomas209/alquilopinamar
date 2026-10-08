@@ -28,7 +28,7 @@ export default async function AdminPropiedadEditarPage({ params }: { params: Pro
     prisma.zone.findMany({
       where: { OR: [{ isActive: true }, { id: p.zoneId }] },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-      select: { id: true, name: true },
+      select: { id: true, name: true, slug: true },
     }),
     prisma.amenity.findMany({
       where: { OR: [{ isActive: true }, { id: { in: usados } }] },

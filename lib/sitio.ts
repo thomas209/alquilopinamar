@@ -107,7 +107,11 @@ function ordenDe(orden: Orden | undefined): Prisma.PropertyOrderByWithRelationIn
   return DESTACADAS_PRIMERO;
 }
 
-const cache = <A extends unknown[], R>(fn: (...a: A) => Promise<R>, clave: string) =>
+// Lo que se guarda en cache tiene que sobrevivir a JSON: nada de Date ni Decimal
+// (volverian como texto y romperian en la segunda visita). TypeScript lo controla.
+type Json = string | number | boolean | null | undefined | Json[] | { [clave: string]: Json };
+
+const cache = <A extends unknown[], R extends Json>(fn: (...a: A) => Promise<R>, clave: string) =>
   unstable_cache(fn, ["sitio", clave], { tags: [TAG_SITIO], revalidate: 600 });
 
 function whereListado(f: FiltrosListado): Prisma.PropertyWhereInput {
@@ -235,8 +239,10 @@ export const propiedadPorSlug = cache(async (slug: string) => {
     checkOutTime: p.checkOutTime,
     minNights: p.minNights,
     contactWhatsapp: p.contactWhatsapp,
-    publishedAt: p.publishedAt,
-    updatedAt: p.updatedAt,
+    // Fechas como texto ISO: la cache (unstable_cache) guarda JSON y un Date
+    // volveria como string en la segunda visita. Asi el tipo es el mismo siempre.
+    publishedAt: p.publishedAt?.toISOString() ?? null,
+    updatedAt: p.updatedAt.toISOString(),
     // Solo si el dueño eligio mostrar el punto exacto; si no, nunca sale de aca
     ubicacionExacta: p.showExactLocation && p.lat !== null && p.lng !== null ? { lat: p.lat, lng: p.lng } : null,
     fotos: p.images,
@@ -256,7 +262,7 @@ export type FichaPropiedad = NonNullable<Awaited<ReturnType<typeof propiedadPorS
 
 // Todo lo publico para el sitemap y llms.txt (sin cache de 10 min: se pide poco).
 export const paraSitemap = unstable_cache(
-  async () => {
+  async (): Promise<Json & { propiedades: { slug: string; code: number; title: string; operation: Operacion; type: Tipo; updatedAt: string; zone: { name: string }; images: { url: string }[] }[]; zonas: { slug: string; name: string; updatedAt: string; description: string | null }[] }> => {
     const [propiedades, zonas] = await Promise.all([
       prisma.property.findMany({
         where: PUBLICA,
@@ -278,7 +284,11 @@ export const paraSitemap = unstable_cache(
         select: { slug: true, name: true, updatedAt: true, description: true },
       }),
     ]);
-    return { propiedades, zonas };
+    // Fechas como texto ISO (la cache guarda JSON; ver propiedadPorSlug)
+    return {
+      propiedades: propiedades.map((p) => ({ ...p, updatedAt: p.updatedAt.toISOString() })),
+      zonas: zonas.map((z) => ({ ...z, updatedAt: z.updatedAt.toISOString() })),
+    };
   },
   ["sitio", "sitemap"],
   { tags: [TAG_SITIO], revalidate: 3600 },

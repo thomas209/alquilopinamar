@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { propiedades, zonas } = await paraSitemap();
-  const ultima = propiedades.reduce<Date | undefined>((max, p) => (!max || p.updatedAt > max ? p.updatedAt : max), undefined);
+  // Fechas ISO: se comparan bien como texto
+  const ultima = propiedades.reduce<string | undefined>((max, p) => (!max || p.updatedAt > max ? p.updatedAt : max), undefined);
 
   return [
     { url: SITE_URL, lastModified: ultima, changeFrequency: "daily", priority: 1 },

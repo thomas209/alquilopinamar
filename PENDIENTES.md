@@ -22,29 +22,28 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admi
 
 ## Publicación: estado
 
-- **Railway:** proyecto `alquilopinamar` creado (8/10) con Postgres en **US East (Virginia)**, la misma región que Vercel. Acceso público por TCP activado (`DATABASE_PUBLIC_URL`). **Base lista (8/10):** migración `init` aplicada con `db:deploy-prod`, 5 zonas y 12 amenities cargados y usuario del admin creado con `db:preparar-prod`.
-- **`.env.prod-db`** ya está en la Mac de Tommy (permisos 600, ignorado por git).
-- **Vercel:** sin crear. Se crea cuando `main` tenga el sitio (PRs unidos).
-- **Secretos:** las claves y contraseñas (URL de la base, `NEXTAUTH_SECRET`, Cloudinary, Resend, secreto de GitHub) las carga Tommy: Claude no escribe credenciales en formularios web.
+**El sitio está publicado (8/10/2026): https://alquilopinamar.vercel.app**
+
+- **Railway:** proyecto `alquilopinamar`, Postgres en US East (Virginia). Migración `init` aplicada, 5 zonas, 12 amenities y usuario del admin de Tommy.
+- **Vercel:** proyecto `alquilopinamar`. Solo despliega `main` ("Only build production"). 9 variables solo en Production: 5 de configuración (URL, NextAuth URL, Cloudinary cloud y carpeta, mail del admin) y 4 secretas cargadas por Tommy (`DATABASE_URL`, `NEXTAUTH_SECRET`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`).
+- **Probado en producción:** home, zonas, quiénes somos, 404, sitemap, robots (abierto) y login del admin.
+- **`.env.prod-db`** en la Mac de Tommy (permisos 600, ignorado por git).
+- Claude no escribe credenciales en formularios web: las claves las carga Tommy.
 - Los proyectos de Member en Railway y Vercel no se tocan.
 
 ## Por dónde seguir (retomar acá)
 
-Rama de trabajo: **`cierre`** (sale de `seo`). Lo último hecho: el código del paso 8. Tipos y lint pasan; contacto y términos se revisaron en tamaño celular; las cabeceras de seguridad se verificaron.
+Fase 1 publicada. Lo que queda para cerrarla del todo:
 
-Orden de los PR: #4 (`sitio-publico`) → #5 (`consultas`) → `seo` → `cierre`. Claude los va pasando a `main` a medida que se unen.
+1. **Tommy:** entrar a https://alquilopinamar.vercel.app/admin con su usuario de producción y cargar las primeras propiedades reales.
+2. **Tommy:** secreto `PROD_DATABASE_URL` en GitHub para el backup diario (Settings → Secrets and variables → Actions).
+3. **Tommy:** cuenta de Resend → `RESEND_API_KEY` en Vercel (Secret) para que lleguen los avisos de consultas.
+4. **Tommy:** clave nueva de Cloudinary (la actual quedó en un chat): actualizarla en Vercel y en el `.env`.
+5. **Tommy:** titular del sitio y revisión legal de términos y privacidad; después cargar `NEXT_PUBLIC_TITULAR`, `NEXT_PUBLIC_CUIT`, `NEXT_PUBLIC_DOMICILIO`, `NEXT_PUBLIC_WHATSAPP` y `NEXT_PUBLIC_EMAIL_CONTACTO` en Vercel (Config) y redeploy.
+6. Dominio propio, Google Search Console y Content-Security-Policy (ver `docs/publicacion.md`).
+7. Después: Fase 2 (registro con link mágico, panel del propietario, favoritos, mapa).
 
-1. Tommy une el #4 y el #5 (en ese orden).
-2. Tommy prueba el SEO y el paso 8 en la Mac (ver abajo).
-3. Claude abre los PR de `seo` y `cierre`.
-4. Publicar siguiendo `docs/publicacion.md`.
-
-### Cómo probar el paso 8
-
-- `/nosotros`, `/contacto`, `/terminos`, `/privacidad` en celular y compu. El footer tiene los links nuevos.
-- Contacto muestra WhatsApp y mail solo si están cargados en el `.env` (`NEXT_PUBLIC_WHATSAPP`, `NEXT_PUBLIC_EMAIL_CONTACTO`).
-- `/admin`: visitas, clics en WhatsApp, consultas de 7 y 30 días, propiedades con más interés y últimas consultas.
-- `npm run db:seed` sigue funcionando igual (ahora usa `prisma/datos-iniciales.mjs`).
+Al pegar una clave en Vercel: correr el comando que la copia, escribir el nombre a mano en Key (no copiarlo) y pegar en Value. Si se copia otra cosa en el medio, se pisa lo copiado.
 
 ### Cómo probar el SEO
 

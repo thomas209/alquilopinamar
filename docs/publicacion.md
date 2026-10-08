@@ -33,12 +33,8 @@ Lo que hace Tommy (cuentas, claves, pagos y "OK") está marcado con **Tommy**. E
 ## 2. Sitio (Vercel)
 
 1. **Tommy:** en Vercel, **Add New → Project** → importar `thomas209/alquilopinamar`. Framework: Next.js (lo detecta solo). No tocar los comandos de build.
-2. **Settings → Git → Ignored Build Step**: elegir *Run my Bash script* y pegar:
-   ```bash
-   if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then exit 1; else exit 0; fi
-   ```
-   Así solo se despliega `main`. Las versiones de prueba de otras ramas usarían la misma base de producción, así que quedan apagadas.
-3. **Settings → Environment Variables**, solo para **Production**:
+2. **Settings → Build and Deployment → Ignored Build Step**: elegir **Only build production**. Así solo se despliega `main`: las versiones de prueba de otras ramas usarían la misma base de producción, así que quedan apagadas.
+3. **Settings → Environment Variables**, solo para **Production** (tipo **Secret** para claves y contraseñas, **Config** para el resto). Al pegar una clave: copiarla con un comando, escribir el nombre a mano en Key y pegar en Value; si se copia el nombre, se pisa la clave copiada:
 
    | Variable | Valor |
    |---|---|

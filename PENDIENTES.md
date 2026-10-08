@@ -1,11 +1,11 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 6 de octubre de 2026.
+> Última actualización: 8 de octubre de 2026.
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
 
-Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system y el admin completo de propiedades, con fotos. Falta toda la parte pública y publicar el sitio.
+Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admin completo de propiedades (con fotos) y la primera versión del sitio público. Faltan terminar el sitio público, las consultas, el SEO y publicar.
 
 | Paso de la Fase 1 | Estado |
 |---|---|
@@ -14,18 +14,30 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system y el adm
 | 3. Schema Fase 1 + migración inicial + datos iniciales | Hecho, en `main` |
 | 4a. Admin: login, zonas y amenities | Hecho y probado, en `main` |
 | 4b. Admin: propiedades (listado, formulario, publicar, pausar, duplicar, dar de baja) | Hecho y probado, en `main` |
-| 4c. Admin: fotos de las propiedades (subir, ordenar, portada, borrar) | Hecho y probado, en la rama `admin-fotos` (falta unirla a `main`) |
-| 5. Sitio público: header, home con buscador, listado con filtros, ficha | **Siguiente** |
+| 4c. Admin: fotos de las propiedades (subir, ordenar, portada, borrar) | Hecho y probado, en `main` |
+| 5. Sitio público: header, home con buscador, listado con filtros, ficha, páginas por zona | **En curso.** Hecho en la rama `sitio-publico` (más filtros, "Ver más", descripción plegable y páginas por zona sumados el 8/10). Falta la revisión de Tommy, sobre todo en celular |
 | 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | Pendiente |
 | 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Pendiente |
 | 8. Páginas institucionales, métricas, revisión en celular y publicación | Pendiente |
 
+## Por dónde seguir (retomar acá)
+
+Rama de trabajo: **`sitio-publico`**. Lo último hecho: "Más filtros" (precio, baños, distancia al mar, cochera y comodidades), "Ver más" en el listado, descripción plegable en la ficha y páginas por zona (`/zonas/[slug]`). Tipos y lint pasan; falta probarlo con datos en la Mac.
+
+1. Tommy mira el sitio (`npm run dev`) en escritorio y **en celular**, y dice qué cambiar. En tamaño celular no se pudo revisar desde Claude.
+2. Aplicar esos cambios y completar lo que falta del paso 5 (ver "Qué falta desarrollar").
+3. Subir los commits nuevos (`git push`; la rama ya existe en GitHub), crear el pull request y unir a `main` (el *Merge* lo hace Tommy).
+4. Seguir con el paso 6: consultas.
+
 ## Lo próximo que tiene que hacer Tommy
 
-1. **Unir la rama `admin-fotos` a `main`** con un pull request en GitHub (Claude lo crea; el *Merge* lo hace Tommy).
-2. **Cargar 3 o 4 propiedades reales con 5 fotos o más y publicarlas**, para armar y probar el sitio público con contenido real.
-3. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
-4. **Conseguir cuando se pueda:** dominio definitivo, número de WhatsApp del sitio y logo. No frenan el desarrollo.
+1. **Revisar el sitio público** en el celular y en la compu: home (`/`), listado (`/propiedades`, probar "Más filtros"), ficha (`/propiedad/casa-frente-al-mar-ap-0001`) y una zona (`/zonas/pinamar`).
+2. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
+3. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
+4. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
+5. **Pasar el logo en un archivo aparte** si es el definitivo, para ponerlo en el header.
+6. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
+7. **Conseguir cuando se pueda:** dominio definitivo y número de WhatsApp del sitio. No frenan el desarrollo.
 
 ## Qué está hecho
 
@@ -56,12 +68,21 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - Fotos: subida múltiple a Cloudinary, orden (arrastrando o con flechas), portada y borrado.
 - Propiedades: listado con buscador y filtros, formulario completo (datos, ubicación, características, amenities, precio, tarifas, reglas, destacado), publicar, pausar, duplicar y dar de baja.
 
+### Sitio público (primera versión, rama `sitio-publico`)
+- Header fijo translúcido con menú en pastilla (Alquilar · Anual · Comprar) que se esconde al bajar, y footer.
+- Home: portada con buscador (operación, zona, tipo), destacadas, recién publicadas y zonas. La portada usa la primera foto de la primera destacada.
+- Listado `/propiedades`: filtros por operación, zona, tipo, dormitorios, pileta y mascotas, y orden. Todo en la URL.
+- Ficha `/propiedad/[slug]`: galería (carrusel en celular, mosaico en desktop, visor a pantalla completa), características, comodidades, tarifas, reglas, similares, tarjeta de precio y barra fija abajo en celular. Botón de WhatsApp solo si hay número.
+- "Más filtros" en hoja de vidrio: precio por moneda (USD o $, sin conversión), baños, distancia al mar, cochera y comodidades. "Ver más" de a 24 con el total real.
+- Descripción plegable ("Leer más") en la ficha.
+- Páginas por zona `/zonas/[slug]`: portada, texto de la zona, accesos por operación con cantidad, propiedades de la zona y otras zonas. La home, el footer y la ficha linkean ahí.
+- Archivos: `lib/sitio.ts` (consultas con caché), `lib/busqueda.ts` (filtros ↔ URL), `lib/whatsapp.ts`, `components/site/`.
+
 ## Qué falta desarrollar
 
 ### Fase 1 — lo que queda
-- **Fotos de las propiedades:** subida múltiple a Cloudinary, orden arrastrando, portada. Hasta que estén, ninguna propiedad se puede publicar (la regla pide 5 fotos). Al sumarlas, hacer que "Duplicar" copie también las fotos.
 - **Admin:** editar el hero de la home; elegir punto en el mapa en vez de escribir latitud y longitud.
-- **Sitio público:** header y menú en pastilla, home con buscador, listado con filtros y orden, ficha con galería y barra fija de consulta, páginas por zona.
+- **Sitio público (lo que queda):** portada de la home editable, foto de portada por zona desde el admin, logo en el header y ajustes que salgan de la revisión en celular.
 - **Consultas:** formulario en hoja, botón de WhatsApp, mail de aviso (Resend), bandeja en el admin.
 - **SEO:** metadata por página, JSON-LD, imágenes OG, sitemap, robots, llms.txt.
 - **Cierre:** quiénes somos, contacto, términos, métricas básicas, prueba completa en celular.

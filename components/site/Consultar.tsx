@@ -219,7 +219,12 @@ function HojaConsulta({ propiedad, whatsapp, onCerrar, onWhatsapp }: { propiedad
           <Boton type="submit" form={idForm} ancho disabled={enviando}>
             {enviando ? "Enviando…" : "Enviar consulta"}
           </Boton>
-          <p className="text-center text-[12px] text-texto-2">Tus datos solo los ve quien publica la propiedad.</p>
+          <p className="text-center text-[12px] text-texto-2">
+            Tus datos solo los ve quien publica la propiedad.{" "}
+            <a href="/privacidad" target="_blank" className="underline underline-offset-2">
+              Privacidad
+            </a>
+          </p>
         </>
       }
     >

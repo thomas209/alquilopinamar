@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-type Variante = "primario" | "secundario" | "texto";
+type Variante = "primario" | "secundario" | "inverso" | "texto";
 type Tamano = "chico" | "normal" | "grande";
 
 type Base = {
@@ -24,6 +24,7 @@ const TAMANOS: Record<Tamano, string> = {
 const VARIANTES: Record<Variante, string> = {
   primario: "bg-negro text-blanco hover:opacity-90",
   secundario: "bg-gris-100 text-negro hover:bg-gris-200",
+  inverso: "bg-blanco text-negro hover:bg-gris-100", // sobre fondo negro
   texto: "text-link hover:opacity-70",
 };
 

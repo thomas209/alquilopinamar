@@ -31,8 +31,9 @@ Todo modelo o columna nueva **debe** tener su migración en `prisma/migrations/`
 | `db-backup` | Copia todas las tablas a `backups/<fecha>/<Tabla>.json` dentro de una transacción `READ ONLY` (Postgres rechaza cualquier escritura). Muestra filas por tabla |
 | `db-deploy-prod` | Muestra migraciones pendientes, avisa si alguna tiene `DROP`/`DELETE`/`TRUNCATE`, hace backup, pide escribir `APLICAR EN PRODUCCION`, corre `prisma migrate deploy`, hace backup de nuevo y compara filas |
 | `db-copy-prod-to-local` | Carga el último backup de producción en la base local. Nunca escribe en producción |
+| `db-preparar-prod` | Una sola vez al publicar, después de `db-deploy-prod`: hace backup, pide escribir `PREPARAR PRODUCCION`, carga las zonas y amenities que falten y crea o actualiza un usuario del admin. Solo inserta o actualiza, nunca borra |
 
-Los cuatro están escritos en `scripts/` (comparten `scripts/_env.mjs`). `db-backup` venía de Member; los otros tres no estaban en la copia de referencia y se escribieron para este proyecto con el comportamiento de esta tabla.
+Están escritos en `scripts/` (comparten `scripts/_env.mjs`). `db-backup` venía de Member; los otros tres no estaban en la copia de referencia y se escribieron para este proyecto con el comportamiento de esta tabla.
 
 ## Comandos
 
@@ -60,12 +61,12 @@ Orden: la migración se aplica a producción **antes** de que Vercel despliegue 
 ## Backups
 
 - **Manual:** `npm run db:backup` antes de cualquier cosa que escriba en producción.
-- **Automático:** GitHub Actions diario (03:00 ARG) con `pg_dump`, retención 90 días, usando el secret `PROD_DATABASE_URL`. Se configura junto con la base de producción.
+- **Automático:** GitHub Actions diario (03:00 ARG), `.github/workflows/db-backup.yml`: `pg_dump` completo + copia JSON por tabla, retención 90 días, usando el secret `PROD_DATABASE_URL`. Se activa al cargar el secreto (ver `docs/publicacion.md`).
 - Railway Hobby no incluye backups propios: no confiar en eso.
 
 ## Restaurar (emergencia)
 
-1. Descargar el `.dump` desde GitHub Actions.
+1. Descargar el artefacto `backup-…` desde GitHub Actions y descomprimirlo: adentro está `base.dump`.
 2. Restaurarlo **primero en la base local** y revisarlo:
    ```
    pg_restore --clean --if-exists --no-owner -d postgresql://localhost:5432/alquilopinamar_dev archivo.dump

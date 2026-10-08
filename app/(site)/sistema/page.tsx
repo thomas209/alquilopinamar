@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Demo from "./Demo";
 
 // Muestrario del design system. Es una pagina interna para revisar los
@@ -9,5 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default function SistemaPage() {
+  // Solo en desarrollo: en el sitio publicado no existe
+  if (process.env.NODE_ENV === "production") notFound();
   return <Demo />;
 }

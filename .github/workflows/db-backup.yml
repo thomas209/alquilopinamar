@@ -1,0 +1,80 @@
+# Backup diario de la base de PRODUCCION (solo lectura: ver scripts/db-backup.mjs).
+# Corre todos los dias a las 3:00 (hora argentina) y tambien a mano desde
+# GitHub → Actions → "Backup de la base" → Run workflow.
+#
+# Necesita el secreto PROD_DATABASE_URL (Settings → Secrets and variables → Actions).
+# Sin el secreto no hace nada. Cada backup queda 90 dias como artefacto del repo
+# (privado): tiene datos personales, no compartirlo.
+#
+# Guarda dos cosas:
+#   - base.dump: pg_dump completo (formato custom) para restaurar con pg_restore.
+#   - backups/: una copia JSON por tabla (scripts/db-backup.mjs), facil de leer.
+# pg_dump corre en la imagen oficial de Postgres 17: sirve para bases 17 o anteriores.
+name: Backup de la base
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROD_DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+    steps:
+      - name: Ver si hay secreto
+        id: secreto
+        run: |
+          if [ -z "$PROD_DATABASE_URL" ]; then
+            echo "Falta el secreto PROD_DATABASE_URL: no se hace backup."
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.secreto.outputs.hay == 'si'
+
+      - uses: actions/setup-node@v4
+        if: steps.secreto.outputs.hay == 'si'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        if: steps.secreto.outputs.hay == 'si'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: pg_dump
+        if: steps.secreto.outputs.hay == 'si'
+        run: |
+          umask 077
+          docker run --rm -e DB_URL="$PROD_DATABASE_URL" postgres:17 \
+            sh -c 'pg_dump "$DB_URL" --format=custom --no-owner --no-privileges' > base.dump
+          test -s base.dump
+
+      - name: Copia JSON por tabla
+        if: steps.secreto.outputs.hay == 'si'
+        run: |
+          umask 077
+          printf 'PROD_DATABASE_URL="%s"\n' "$PROD_DATABASE_URL" > .env.prod-db
+          node scripts/db-backup.mjs
+          rm -f .env.prod-db
+          tar -czf backup.tar.gz base.dump backups
+
+      - uses: actions/upload-artifact@v4
+        if: steps.secreto.outputs.hay == 'si'
+        with:
+          name: backup-${{ github.run_id }}
+          path: backup.tar.gz
+          retention-days: 90
+          if-no-files-found: error

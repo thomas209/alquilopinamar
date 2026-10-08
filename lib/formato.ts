@@ -26,8 +26,8 @@ export function formatearCodigo(code: number): string {
 
 // Fechas siempre en hora argentina (el servidor corre en UTC).
 const ZONA = "America/Argentina/Buenos_Aires";
-const fechaHora = new Intl.DateTimeFormat("es-AR", { timeZone: ZONA, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const fechaHoraAnio = new Intl.DateTimeFormat("es-AR", { timeZone: ZONA, day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const fechaHora = new Intl.DateTimeFormat("es-AR", { timeZone: ZONA, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const fechaHoraAnio = new Intl.DateTimeFormat("es-AR", { timeZone: ZONA, day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 const diaMes = new Intl.DateTimeFormat("es-AR", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
 // "8 oct, 10:52" (con año si no es el actual)

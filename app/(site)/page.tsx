@@ -4,7 +4,7 @@ import Foto from "@/components/site/Foto";
 import PropiedadCard from "@/components/site/PropiedadCard";
 import Boton from "@/components/ui/Boton";
 import Rotulo from "@/components/ui/Rotulo";
-import { destacadas, recientes, zonasActivas } from "@/lib/sitio";
+import { destacadas, portadaHome, recientes, zonasActivas } from "@/lib/sitio";
 import JsonLd from "@/components/site/JsonLd";
 import { jsonLdSitio } from "@/lib/jsonld";
 import { metadataDePagina, SITE_DESCRIPCION, SITE_NOMBRE } from "@/lib/seo";
@@ -17,9 +17,9 @@ export const metadata = metadataDePagina({
 });
 
 export default async function HomePage() {
-  const [zonas, top, nuevas] = await Promise.all([zonasActivas(), destacadas(), recientes()]);
-  // Mientras no haya una foto de portada cargada desde el admin, se usa la de la primera destacada.
-  const portada = (top[0] ?? nuevas[0])?.fotos[0];
+  const [zonas, top, nuevas, cargada] = await Promise.all([zonasActivas(), destacadas(), recientes(), portadaHome()]);
+  // La portada se carga en Admin > Contenido; si no hay, se usa la foto de la primera destacada.
+  const portada = cargada ?? (top[0] ?? nuevas[0])?.fotos[0];
 
   return (
     <>

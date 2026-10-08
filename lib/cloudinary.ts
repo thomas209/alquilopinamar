@@ -30,7 +30,12 @@ export function esNuestra(publicId: string): boolean {
 // Permiso para que el navegador suba UNA foto directo a Cloudinary (sin pasar
 // por nuestro servidor: asi no hay limite de peso ni se pierde calidad).
 export function firmaDeSubida(codigo: string) {
-  const carpeta = CARPETA + "/propiedades/" + codigo;
+  return firmaDeSubidaEn("propiedades/" + codigo);
+}
+
+// Lo mismo para cualquier subcarpeta del proyecto (ej. "portadas/home").
+export function firmaDeSubidaEn(subcarpeta: string) {
+  const carpeta = CARPETA + "/" + subcarpeta.replace(/^\/+|\/+$/g, "");
   const params = {
     asset_folder: carpeta, // donde se ve en la biblioteca de Cloudinary
     public_id: carpeta + "/" + randomUUID().replace(/-/g, "").slice(0, 16),
@@ -56,4 +61,11 @@ export async function borrarDeCloudinary(publicId: string): Promise<boolean> {
   const datos = (await res.json().catch(() => null)) as { result?: string } | null;
   // "not found" tambien vale: ya no esta
   return res.ok && (datos?.result === "ok" || datos?.result === "not found");
+}
+
+// public_id a partir de una URL de Cloudinary (para borrar una imagen guardada solo como URL).
+// https://res.cloudinary.com/<cloud>/image/upload/v123/<carpeta>/<id>.jpg -> <carpeta>/<id>
+export function publicIdDeUrl(url: string): string | null {
+  const m = url.match(/\/image\/upload\/(?:[^/]*\/)*?v\d+\/(.+?)(?:\.[a-z0-9]+)?$/i);
+  return m ? m[1] : null;
 }

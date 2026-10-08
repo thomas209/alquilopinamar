@@ -4,6 +4,8 @@ import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { TAG_SITIO } from "@/lib/cache";
+import { ubicacionPublica } from "@/lib/mapa";
+import { leerPortadaHome } from "@/lib/portadas";
 import type { MonedaPrecio, Operacion, PeriodoPrecio, Tipo } from "@/lib/etiquetas";
 
 export type Orden = "destacadas" | "nuevas" | "precio-asc" | "precio-desc";
@@ -171,6 +173,9 @@ export const similares = cache(async (id: string, zoneId: string, operation: Ope
   return filas.map(aCard);
 }, "similares");
 
+// Foto de portada de la home cargada desde el admin (o null).
+export const portadaHome = cache(leerPortadaHome, "portada-home");
+
 export const zonasActivas = cache(async () => {
   return prisma.zone.findMany({
     where: { isActive: true },
@@ -245,6 +250,8 @@ export const propiedadPorSlug = cache(async (slug: string) => {
     updatedAt: p.updatedAt.toISOString(),
     // Solo si el dueño eligio mostrar el punto exacto; si no, nunca sale de aca
     ubicacionExacta: p.showExactLocation && p.lat !== null && p.lng !== null ? { lat: p.lat, lng: p.lng } : null,
+    // Para el mapa de la ficha: exacta, o corrida y redondeada (lib/mapa.ts)
+    ubicacion: ubicacionPublica(p.id, p.lat, p.lng, p.showExactLocation),
     fotos: p.images,
     amenities: p.amenities.map((a) => a.amenity).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)),
     tarifas: p.rates.map((t) => ({

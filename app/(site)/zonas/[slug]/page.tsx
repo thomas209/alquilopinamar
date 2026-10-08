@@ -7,6 +7,8 @@ import Boton from "@/components/ui/Boton";
 import Rotulo from "@/components/ui/Rotulo";
 import { OPERACIONES_URL, urlDeBusqueda } from "@/lib/busqueda";
 import { listarPropiedades, zonaPorSlug, zonasActivas } from "@/lib/sitio";
+import { metadataDePagina, migasDePan, urlAbsoluta } from "@/lib/seo";
+import JsonLd from "@/components/site/JsonLd";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -15,17 +17,16 @@ const EN_PAGINA = 12;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const z = await zonaPorSlug(slug);
-  if (!z) return { title: "Zona no encontrada" };
-  const titulo = z.seoTitle || "Alquiler y venta de propiedades en " + z.name;
-  const descripcion =
-    z.seoDescription ||
-    (z.description ? z.description.replace(/\s+/g, " ").slice(0, 155) : "Casas y departamentos en alquiler temporario, alquiler anual y venta en " + z.name + ". Fotos, precios y consulta directa.");
-  return {
-    title: titulo,
-    description: descripcion,
-    alternates: { canonical: "/zonas/" + z.slug },
-    openGraph: { title: titulo, description: descripcion, url: "/zonas/" + z.slug },
-  };
+  if (!z) return { title: "Zona no encontrada", robots: { index: false } };
+  return metadataDePagina({
+    titulo: z.seoTitle || "Alquiler y venta de propiedades en " + z.name,
+    descripcion:
+      z.seoDescription ||
+      z.description ||
+      "Casas y departamentos en alquiler temporario, alquiler anual y venta en " + z.name + ". Fotos reales, precios claros y consulta directa.",
+    ruta: "/zonas/" + z.slug,
+    imagen: null, // la arma opengraph-image.tsx de esta carpeta, con foto de la zona
+  });
 }
 
 export default async function ZonaPage({ params }: Props) {
@@ -41,6 +42,21 @@ export default async function ZonaPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        datos={[
+          migasDePan([
+            { nombre: "Inicio", ruta: "/" },
+            { nombre: z.name, ruta: "/zonas/" + z.slug },
+          ]),
+          {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Propiedades en " + z.name,
+            numberOfItems: total,
+            itemListElement: propiedades.map((p, i) => ({ "@type": "ListItem", position: i + 1, url: urlAbsoluta("/propiedad/" + p.slug), name: p.title })),
+          },
+        ]}
+      />
       <section className="relative isolate flex min-h-[52svh] items-end bg-gris-100 md:min-h-[58svh]">
         {portada && <Foto url={portada} alt={z.name} sizes="100vw" anchos={[800, 1200, 1600, 2400]} prioridad className="absolute inset-0 -z-10 h-full w-full object-cover" />}
         <div className="mx-auto w-full max-w-[1440px] px-4 pt-10 pb-5 md:px-12 md:pb-10">

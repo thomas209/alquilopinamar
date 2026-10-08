@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import PropiedadCard from "@/components/site/PropiedadCard";
 import { Atenuable, Filtros, LimpiarFiltros, MarcoListado, VerMas } from "@/components/site/Listado";
 import { etiquetaDe, TIPOS } from "@/lib/etiquetas";
-import { leerBusqueda, OPERACIONES_URL, operacionDeUrl, tipoDeUrl, type Busqueda } from "@/lib/busqueda";
+import { leerBusqueda, OPERACIONES_URL, operacionDeUrl, tipoDeUrl, urlDeBusqueda, type Busqueda } from "@/lib/busqueda";
+import { metadataDePagina } from "@/lib/seo";
 import { comodidadesActivas, listarPropiedades, zonasActivas, type Orden } from "@/lib/sitio";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -17,10 +18,21 @@ function tituloDe(b: Busqueda, zonas: { slug: string; name: string }[]): string 
   return que + como + " en " + zona;
 }
 
+// Solo se indexan los listados por operacion, zona y tipo. Con cualquier otro
+// filtro (precio, comodidades, orden, "Ver más"...) la pagina no se indexa y su
+// canonica es la version sin esos filtros: evita miles de paginas casi iguales.
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const [b, zonas] = [leerBusqueda(await searchParams), await zonasActivas()];
+  const sp = await searchParams;
+  const [b, zonas] = [leerBusqueda(sp), await zonasActivas()];
   const titulo = tituloDe(b, zonas);
-  return { title: titulo, description: titulo + ". Fotos, precios y consulta directa en AlquiloPinamar." };
+  const canonica = urlDeBusqueda({ operacion: b.operacion, zona: b.zona, tipo: b.tipo });
+  const conFiltrosFinos = Object.keys(sp).some((k) => !["operacion", "zona", "tipo"].includes(k));
+  return metadataDePagina({
+    titulo,
+    descripcion: titulo + ": casas, departamentos y más con fotos reales, precios claros y consulta directa con el dueño o la inmobiliaria.",
+    ruta: canonica,
+    noIndexar: conFiltrosFinos,
+  });
 }
 
 export default async function PropiedadesPage({ searchParams }: Props) {

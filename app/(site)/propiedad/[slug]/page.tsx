@@ -13,25 +13,27 @@ import { ETIQUETA_PERIODO, formatearCodigo, formatearMonto } from "@/lib/formato
 import { fotoUrl } from "@/lib/foto";
 import { datosClave } from "@/lib/busqueda";
 import { linkWhatsapp, numeroWhatsapp } from "@/lib/whatsapp";
+import { jsonLdPropiedad } from "@/lib/jsonld";
+import { metadataDePagina, migasDePan, SITE_URL } from "@/lib/seo";
+import JsonLd from "@/components/site/JsonLd";
 import { propiedadPorSlug, similares, type FichaPropiedad } from "@/lib/sitio";
 
 type Props = { params: Promise<{ slug: string }> };
 
-const SITE_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const p = await propiedadPorSlug(slug);
-  if (!p) return { title: "Propiedad no encontrada" };
-  const titulo = p.title + " · " + etiquetaDe(OPERACIONES, p.operation) + " en " + p.zona.name;
-  const descripcion = p.description.replace(/\s+/g, " ").slice(0, 155);
-  const imagen = p.fotos[0] ? fotoUrl(p.fotos[0].url, "c_fill,g_auto,w_1200,h_630,q_auto,f_jpg") : undefined;
-  return {
-    title: titulo,
-    description: descripcion,
-    alternates: { canonical: "/propiedad/" + p.slug },
-    openGraph: { title: titulo, description: descripcion, url: "/propiedad/" + p.slug, images: imagen ? [{ url: imagen, width: 1200, height: 630 }] : undefined },
-  };
+  if (!p) return { title: "Propiedad no encontrada", robots: { index: false } };
+  const periodo = ETIQUETA_PERIODO[p.pricePeriod];
+  const precio = p.price === null ? "Precio a consultar" : formatearMonto(p.price, p.currency) + (periodo ? " por " + periodo : "");
+  const resumen = [precio, datosClave(p)].filter(Boolean).join(" · ");
+  const foto = p.fotos[0];
+  return metadataDePagina({
+    titulo: p.title + " · " + etiquetaDe(OPERACIONES, p.operation) + " en " + p.zona.name,
+    descripcion: resumen + ". " + p.description,
+    ruta: "/propiedad/" + p.slug,
+    imagen: foto ? { url: fotoUrl(foto.url, "c_fill,g_auto,w_1200,h_630,q_auto,f_jpg"), width: 1200, height: 630, alt: p.title } : undefined,
+  });
 }
 
 function caracteristicas(p: FichaPropiedad): { etiqueta: string; valor: string }[] {
@@ -81,6 +83,16 @@ export default async function PropiedadPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[1440px] pb-28 md:px-12 md:pt-6 md:pb-0">
+      <JsonLd
+        datos={[
+          jsonLdPropiedad(p),
+          migasDePan([
+            { nombre: "Inicio", ruta: "/" },
+            { nombre: p.zona.name, ruta: "/zonas/" + p.zona.slug },
+            { nombre: p.title, ruta: "/propiedad/" + p.slug },
+          ]),
+        ]}
+      />
       <ContarVista slug={p.slug} />
       <Galeria fotos={p.fotos} titulo={p.title} />
 

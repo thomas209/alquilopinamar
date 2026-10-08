@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import Logo from "@/components/site/Logo";
 import { OPERACIONES_URL } from "@/lib/busqueda";
 import { cn } from "@/lib/cn";
 
@@ -71,8 +72,9 @@ function Barra({ activa }: { activa: string }) {
   return (
     <header className={cn("vidrio-header sticky top-0 z-40 border-b border-negro/5 transition-transform duration-[450ms] ease-app", oculta && "-translate-y-full")}>
       <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-4 px-4 md:h-16 md:px-12">
-        <Link href="/" className="font-titulo text-[19px] font-semibold tracking-[-0.02em]">
-          AlquiloPinamar
+        <Link href="/" aria-label="AlquiloPinamar, ir al inicio" className="shrink-0 transition-opacity duration-200 hover:opacity-80">
+          <Logo alto={34} prioridad className="md:hidden" />
+          <Logo alto={40} prioridad className="hidden md:block" />
         </Link>
         <div className="hidden md:block">
           <Pastilla activa={activa} />

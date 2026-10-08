@@ -16,6 +16,7 @@
     "db:deploy-prod": "node scripts/db-deploy-prod.mjs",
     "db:preparar-prod": "node scripts/db-preparar-prod.mjs",
     "db:seed": "node scripts/db-guard.mjs && node prisma/seed.mjs",
+    "marca:subir": "node scripts/subir-marca.mjs",
     "admin:crear": "node scripts/db-guard.mjs && node scripts/crear-admin.mjs"
   },
   "dependencies": {

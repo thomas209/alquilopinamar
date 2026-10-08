@@ -4,6 +4,7 @@
 import { fotoUrl } from "@/lib/foto";
 import { etiquetaDe, OPERACIONES, TIPOS } from "@/lib/etiquetas";
 import { ETIQUETA_PERIODO, formatearCodigo } from "@/lib/formato";
+import { urlMarca } from "@/lib/marca";
 import { SITE_NOMBRE, SITE_URL, urlAbsoluta } from "@/lib/seo";
 import type { FichaPropiedad } from "@/lib/sitio";
 
@@ -93,6 +94,7 @@ export function jsonLdSitio() {
       "@id": SITE_URL + "/#organizacion",
       name: SITE_NOMBRE,
       url: SITE_URL,
+      logo: urlMarca("logo-completo", 600, "png"),
       description: "Alquiler temporario, alquiler anual y venta de propiedades en el Partido de Pinamar.",
       areaServed: ["Pinamar", "Cariló", "Valeria del Mar", "Ostende", "Costa Esmeralda"].map((n) => ({ "@type": "Place", name: n + ", Buenos Aires, Argentina" })),
     },

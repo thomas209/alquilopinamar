@@ -1,4 +1,5 @@
-import { Body, Button, Container, Head, Hr, Html, Link, Preview, Section, Text } from "@react-email/components";
+import { Body, Button, Container, Head, Hr, Html, Img, Link, Preview, Section, Text } from "@react-email/components";
+import { PROPORCION, urlMarca } from "@/lib/marca";
 import { etiquetaDe, OPERACIONES, type Operacion } from "@/lib/etiquetas";
 import { formatearCodigo, formatearDia, formatearFechaHora, noches } from "@/lib/formato";
 
@@ -38,8 +39,8 @@ export default function ConsultaNuevaEmail(p: ConsultaNuevaEmailProps) {
       <Preview>{p.name + " consultó por " + codigo + ": " + p.message.slice(0, 90)}</Preview>
       <Body style={{ backgroundColor: "#F5F5F7", fontFamily: FUENTE, margin: 0, padding: "24px 0" }}>
         <Container style={{ maxWidth: "560px", margin: "0 auto", backgroundColor: "#FFFFFF", borderRadius: "22px", overflow: "hidden" }}>
-          <Section style={{ backgroundColor: "#0A0A0A", padding: "22px 32px" }}>
-            <Text style={{ color: "#FFFFFF", fontSize: "17px", fontWeight: 600, letterSpacing: "-0.02em", margin: 0 }}>AlquiloPinamar</Text>
+          <Section style={{ padding: "26px 32px 22px", borderBottom: "1px solid #EDEDED" }}>
+            <Img src={urlMarca("logo-horizontal", 96, "png")} alt="AlquiloPinamar" height="32" width={String(Math.round(32 * PROPORCION["logo-horizontal"]))} style={{ display: "block", height: "32px", width: "auto" }} />
           </Section>
 
           <Section style={{ padding: "32px 32px 8px" }}>

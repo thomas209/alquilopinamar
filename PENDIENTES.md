@@ -20,6 +20,14 @@ Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admi
 | 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Hecho en la rama `seo`, falta la prueba de Tommy |
 | 8. Páginas institucionales, métricas, revisión en celular y publicación | **Código hecho en la rama `cierre`.** Falta: prueba de Tommy, revisión legal, datos del titular y publicar (guía en `docs/publicacion.md`) |
 
+## Publicación: estado
+
+- **Railway:** proyecto `alquilopinamar` creado (8/10) con Postgres en **US East (Virginia)**, la misma región que Vercel. Acceso público por TCP activado (`DATABASE_PUBLIC_URL`). Base vacía: todavía sin tablas.
+- **`.env.prod-db`** ya está en la Mac de Tommy (permisos 600, ignorado por git).
+- **Vercel:** sin crear. Se crea cuando `main` tenga el sitio (PRs unidos).
+- **Secretos:** las claves y contraseñas (URL de la base, `NEXTAUTH_SECRET`, Cloudinary, Resend, secreto de GitHub) las carga Tommy: Claude no escribe credenciales en formularios web.
+- Los proyectos de Member en Railway y Vercel no se tocan.
+
 ## Por dónde seguir (retomar acá)
 
 Rama de trabajo: **`cierre`** (sale de `seo`). Lo último hecho: el código del paso 8. Tipos y lint pasan; contacto y términos se revisaron en tamaño celular; las cabeceras de seguridad se verificaron.

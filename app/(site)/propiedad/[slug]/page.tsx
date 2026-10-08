@@ -5,7 +5,7 @@ import Consultar, { ContarVista, type PropiedadConsulta } from "@/components/sit
 import Galeria from "@/components/site/Galeria";
 import PropiedadCard from "@/components/site/PropiedadCard";
 import TextoPlegable from "@/components/site/TextoPlegable";
-import Icono from "@/components/ui/Icono";
+import Icono, { type NombreIcono } from "@/components/ui/Icono";
 import Precio from "@/components/ui/Precio";
 import Rotulo from "@/components/ui/Rotulo";
 import { etiquetaDe, OPERACIONES, TIPOS } from "@/lib/etiquetas";
@@ -13,6 +13,7 @@ import { ETIQUETA_PERIODO, formatearCodigo, formatearMonto } from "@/lib/formato
 import { fotoUrl } from "@/lib/foto";
 import { datosClave } from "@/lib/busqueda";
 import { linkWhatsapp, numeroWhatsapp } from "@/lib/whatsapp";
+import { iconoDeComodidad } from "@/lib/iconos";
 import { jsonLdPropiedad } from "@/lib/jsonld";
 import { metadataDePagina, migasDePan, SITE_URL } from "@/lib/seo";
 import JsonLd from "@/components/site/JsonLd";
@@ -36,19 +37,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-function caracteristicas(p: FichaPropiedad): { etiqueta: string; valor: string }[] {
+function caracteristicas(p: FichaPropiedad): { etiqueta: string; valor: string; icono: NombreIcono }[] {
   const n = (x: number) => x.toLocaleString("es-AR");
-  const lista: { etiqueta: string; valor: string }[] = [];
-  if (p.maxGuests && p.operation === "ALQUILER_TEMPORARIO") lista.push({ etiqueta: "Huéspedes", valor: n(p.maxGuests) });
-  if (p.rooms) lista.push({ etiqueta: "Ambientes", valor: n(p.rooms) });
-  if (p.bedrooms) lista.push({ etiqueta: "Dormitorios", valor: n(p.bedrooms) });
-  if (p.bathrooms) lista.push({ etiqueta: "Baños", valor: n(p.bathrooms) });
-  if (p.garages) lista.push({ etiqueta: "Cocheras", valor: n(p.garages) });
-  if (p.coveredM2) lista.push({ etiqueta: "Cubiertos", valor: n(p.coveredM2) + " m²" });
-  if (p.lotM2) lista.push({ etiqueta: "Lote", valor: n(p.lotM2) + " m²" });
-  if (p.distanceToSeaM !== null) lista.push({ etiqueta: "Al mar", valor: p.distanceToSeaM >= 1000 ? (p.distanceToSeaM / 1000).toLocaleString("es-AR", { maximumFractionDigits: 1 }) + " km" : n(p.distanceToSeaM) + " m" });
-  if (p.hasPool) lista.push({ etiqueta: "Pileta", valor: "Sí" });
-  lista.push({ etiqueta: "Mascotas", valor: p.petsAllowed ? "Sí" : "No" });
+  const lista: { etiqueta: string; valor: string; icono: NombreIcono }[] = [];
+  if (p.maxGuests && p.operation === "ALQUILER_TEMPORARIO") lista.push({ etiqueta: "Huéspedes", valor: n(p.maxGuests), icono: "personas" });
+  if (p.rooms) lista.push({ etiqueta: "Ambientes", valor: n(p.rooms), icono: "ambientes" });
+  if (p.bedrooms) lista.push({ etiqueta: "Dormitorios", valor: n(p.bedrooms), icono: "dormitorio" });
+  if (p.bathrooms) lista.push({ etiqueta: "Baños", valor: n(p.bathrooms), icono: "bano" });
+  if (p.garages) lista.push({ etiqueta: "Cocheras", valor: n(p.garages), icono: "cochera" });
+  if (p.coveredM2) lista.push({ etiqueta: "Cubiertos", valor: n(p.coveredM2) + " m²", icono: "casa" });
+  if (p.lotM2) lista.push({ etiqueta: "Lote", valor: n(p.lotM2) + " m²", icono: "lote" });
+  if (p.distanceToSeaM !== null)
+    lista.push({
+      etiqueta: "Al mar",
+      valor: p.distanceToSeaM >= 1000 ? (p.distanceToSeaM / 1000).toLocaleString("es-AR", { maximumFractionDigits: 1 }) + " km" : n(p.distanceToSeaM) + " m",
+      icono: "mar",
+    });
+  if (p.hasPool) lista.push({ etiqueta: "Pileta", valor: "Sí", icono: "pileta" });
+  lista.push({ etiqueta: "Mascotas", valor: p.petsAllowed ? "Sí" : "No", icono: "mascota" });
   return lista;
 }
 
@@ -121,11 +127,14 @@ export default async function PropiedadPage({ params }: Props) {
           <Seccion titulo="Características">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
               {caracteristicas(p).map((c) => (
-                <div key={c.etiqueta}>
-                  <dt>
-                    <Rotulo>{c.etiqueta}</Rotulo>
-                  </dt>
-                  <dd className="mt-1.5 font-titulo text-[18px] font-medium tracking-[-0.02em] tabular-nums">{c.valor}</dd>
+                <div key={c.etiqueta} className="flex items-start gap-3.5">
+                  <Icono nombre={c.icono} tamano={24} grosor={1.5} className="mt-0.5 shrink-0 text-negro" />
+                  <div className="min-w-0">
+                    <dt>
+                      <Rotulo>{c.etiqueta}</Rotulo>
+                    </dt>
+                    <dd className="mt-1.5 font-titulo text-[18px] font-medium tracking-[-0.02em] tabular-nums">{c.valor}</dd>
+                  </div>
                 </div>
               ))}
             </dl>
@@ -135,8 +144,8 @@ export default async function PropiedadPage({ params }: Props) {
             <Seccion titulo="Comodidades">
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {p.amenities.map((a) => (
-                  <li key={a.id} className="flex items-center gap-3 text-[15px]">
-                    <Icono nombre="check" tamano={18} className="shrink-0 text-texto-2" />
+                  <li key={a.id} className="flex items-center gap-3.5 text-[15px]">
+                    <Icono nombre={iconoDeComodidad(a.slug)} tamano={22} grosor={1.5} className="shrink-0 text-negro" />
                     {a.name}
                   </li>
                 ))}

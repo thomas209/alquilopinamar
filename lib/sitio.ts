@@ -202,7 +202,7 @@ export const propiedadPorSlug = cache(async (slug: string) => {
     include: {
       zone: { select: { id: true, name: true, slug: true } },
       images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true, width: true, height: true } },
-      amenities: { select: { amenity: { select: { id: true, name: true, sortOrder: true } } } },
+      amenities: { select: { amenity: { select: { id: true, slug: true, name: true, sortOrder: true } } } },
       rates: { orderBy: { sortOrder: "asc" } },
     },
   });

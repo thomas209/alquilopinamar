@@ -193,5 +193,8 @@ npm run dev          # levanta el sitio en http://localhost:3000
 
 ## Pendientes menores
 
+- `npm audit` marca 5 avisos "high" en `braces` (cadena de `eslint-config-next`). Es solo la herramienta de revisión de código: no viaja al sitio. No hay versión arreglada todavía; **no correr `npm audit fix --force`** (baja Next a la 14). Revisar cuando salga `braces` > 3.0.3.
+- MapLibre 6 se sirve con su worker copiado a `public/vendor/` por `scripts/maplibre-worker.mjs` (corre en install, dev y build).
+
 - Actualizar Next en **Member** (sigue en 16.2.9, con avisos críticos). Es un tema de Member, no de este proyecto.
 - Sacar `referencia-member/` de la carpeta cuando ya no se consulte.

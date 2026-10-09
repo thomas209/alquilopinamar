@@ -2,9 +2,12 @@
 // Mapas con MapLibre + OpenFreeMap (estilo Positron: gris claro, gratis, sin clave).
 // No importar directo: usar components/mapa/index.tsx (lo carga solo en el navegador).
 import { useEffect, useRef } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { ESTILO_MAPA, RADIO_APROXIMADO } from "@/lib/mapa-datos";
+
+// El worker se sirve desde public/vendor/ (lo copia scripts/maplibre-worker.mjs)
+maplibregl.setWorkerUrl("/vendor/maplibre-gl-worker-" + maplibregl.getVersion() + ".mjs");
 
 export type Punto = { lat: number; lng: number };
 

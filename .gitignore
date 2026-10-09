@@ -24,3 +24,6 @@ next-env.d.ts
 *.pem
 npm-debug.log*
 .vercel
+
+# worker de MapLibre (lo copia scripts/maplibre-worker.mjs)
+/public/vendor/

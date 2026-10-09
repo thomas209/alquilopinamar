@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     // Copia de solo lectura del codigo de Member: no se revisa ni se importa.
     "referencia-member/**",
     "backups/**",
+    // Worker de MapLibre copiado de node_modules (scripts/maplibre-worker.mjs).
+    "public/vendor/**",
   ]),
 ]);
 

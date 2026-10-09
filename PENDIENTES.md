@@ -141,6 +141,8 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - **Publicación:** dominio definitivo, Google Search Console.
 
 ### Fase 2
+- **2a Favoritos (hecho, PR #16):** corazón en cards y ficha, contador en el header, `/favoritos` (con "Ya no disponibles") y lista compartible `/lista?de=Nombre&p=slugs` con imagen para WhatsApp. En el navegador, sin cuenta (zustand, máximo 40).
+- **Siguiente: 2b** vista mapa en el listado. Después 2c cuentas (link mágico, necesita Resend), 2d panel del propietario, 2e moderación.
 Registro con link mágico, panel del propietario (publicar en pasos, editar, pausar, bandeja de consultas), moderación en el admin, favoritos y lista compartible, vista mapa, novedades.
 
 ### Fase 3

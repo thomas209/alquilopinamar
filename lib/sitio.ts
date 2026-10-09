@@ -173,6 +173,15 @@ export const similares = cache(async (id: string, zoneId: string, operation: Ope
   return filas.map(aCard);
 }, "similares");
 
+// Cards de las propiedades publicadas con esos slugs, en el mismo orden (favoritos y listas).
+// Las que ya no estan publicadas no vuelven.
+export const propiedadesPorSlugs = cache(async (slugs: string[]): Promise<CardPropiedad[]> => {
+  if (slugs.length === 0) return [];
+  const filas = await prisma.property.findMany({ where: { ...PUBLICA, slug: { in: slugs } }, select: SELECT_CARD });
+  const porSlug = new Map(filas.map((f) => [f.slug, aCard(f)]));
+  return slugs.flatMap((s) => porSlug.get(s) ?? []);
+}, "por-slugs");
+
 // Foto de portada de la home cargada desde el admin (o null).
 export const portadaHome = cache(leerPortadaHome, "portada-home");
 

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Corazon from "@/components/site/Corazon";
 import Foto from "@/components/site/Foto";
 import Icono from "@/components/ui/Icono";
 
@@ -7,7 +8,7 @@ type FotoGaleria = { id: string; url: string };
 
 // Galeria de la ficha. Celular: carrusel de borde a borde con contador.
 // Desktop: mosaico de 1 grande + 4. Al tocar una foto se abre el visor a pantalla completa.
-export default function Galeria({ fotos, titulo }: { fotos: FotoGaleria[]; titulo: string }) {
+export default function Galeria({ fotos, titulo, slug }: { fotos: FotoGaleria[]; titulo: string; slug: string }) {
   const carrusel = useRef<HTMLDivElement>(null);
   const [actual, setActual] = useState(0);
   const [visor, setVisor] = useState<number | null>(null);
@@ -44,6 +45,7 @@ export default function Galeria({ fotos, titulo }: { fotos: FotoGaleria[]; titul
             </button>
           ))}
         </div>
+        <Corazon slug={slug} titulo={titulo} />
         <span className="pointer-events-none absolute right-3 bottom-3 rounded-pastilla bg-negro/55 px-2.5 py-1.5 font-rotulo text-[11px] leading-none tracking-[0.06em] text-blanco">
           {actual + 1} / {fotos.length}
         </span>
@@ -69,6 +71,7 @@ export default function Galeria({ fotos, titulo }: { fotos: FotoGaleria[]; titul
             />
           </button>
         ))}
+        <Corazon slug={slug} titulo={titulo} grande />
         <button type="button" onClick={() => setVisor(0)} className="vidrio-circulo absolute right-4 bottom-4 h-10 rounded-pastilla px-4 text-[13px] font-medium active:scale-[0.97]">
           Ver las {fotos.length} fotos
         </button>

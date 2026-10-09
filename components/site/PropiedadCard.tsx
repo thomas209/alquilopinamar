@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Corazon from "@/components/site/Corazon";
 import Foto from "@/components/site/Foto";
 import Precio from "@/components/ui/Precio";
 import Rotulo from "@/components/ui/Rotulo";
@@ -33,6 +34,7 @@ export default function PropiedadCard({ p, aBorde = false, prioridad = false, cl
         {p.isFeatured && (
           <span className="vidrio-circulo absolute top-3 left-3 rounded-pastilla px-2.5 py-1.5 font-rotulo text-[10px] leading-none tracking-[0.08em] uppercase">Destacada</span>
         )}
+        <Corazon slug={p.slug} titulo={p.title} />
         {p.fotos.length > 1 && (
           <span className="absolute right-3 bottom-3 rounded-pastilla bg-negro/55 px-2 py-1 font-rotulo text-[10px] leading-none tracking-[0.06em] text-blanco">
             1 / {p.fotos.length}

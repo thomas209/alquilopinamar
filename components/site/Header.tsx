@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import BotonFavoritos from "@/components/site/BotonFavoritos";
 import Logo from "@/components/site/Logo";
 import { OPERACIONES_URL } from "@/lib/busqueda";
 import { cn } from "@/lib/cn";
@@ -79,9 +80,12 @@ function Barra({ activa }: { activa: string }) {
         <div className="hidden md:block">
           <Pastilla activa={activa} />
         </div>
-        <Link href="/propiedades" className="text-[14px] font-medium text-negro hover:opacity-70">
-          Ver todas
-        </Link>
+        <div className="flex items-center gap-3 md:gap-4">
+          <Link href="/propiedades" className="text-[14px] font-medium text-negro hover:opacity-70">
+            Ver todas
+          </Link>
+          <BotonFavoritos />
+        </div>
       </div>
       <div className="px-4 pb-2 md:hidden">
         <Pastilla activa={activa} ancho />

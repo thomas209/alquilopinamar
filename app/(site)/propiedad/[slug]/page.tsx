@@ -101,7 +101,7 @@ export default async function PropiedadPage({ params }: Props) {
         ]}
       />
       <ContarVista slug={p.slug} />
-      <Galeria fotos={p.fotos} titulo={p.title} />
+      <Galeria fotos={p.fotos} titulo={p.title} slug={p.slug} />
 
       <div className="px-4 md:grid md:grid-cols-[minmax(0,1fr)_380px] md:gap-16 md:px-0">
         <div>

@@ -1,6 +1,6 @@
 // Datos de los mapas, compartidos por servidor y navegador.
-export const TILES = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-export const ATRIBUCION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+// Estilo del mapa: OpenFreeMap "Positron" (gratis, sin clave ni limite; trae su atribucion).
+export const ESTILO_MAPA = "https://tiles.openfreemap.org/styles/positron";
 
 // Centro aproximado de cada zona (para arrancar el mapa del admin)
 export const CENTRO_ZONA: Record<string, [number, number]> = {

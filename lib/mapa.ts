@@ -1,6 +1,6 @@
-// Mapas (Leaflet + CARTO "Positron": gris claro, combina con el sitio y no necesita clave).
+// Mapas (MapLibre + OpenFreeMap "Positron": gris claro, combina con el sitio y no necesita clave).
 import { createHash } from "node:crypto";
-export { ATRIBUCION, CENTRO_PARTIDO, CENTRO_ZONA, RADIO_APROXIMADO, TILES } from "@/lib/mapa-datos";
+export { CENTRO_PARTIDO, CENTRO_ZONA, ESTILO_MAPA, RADIO_APROXIMADO } from "@/lib/mapa-datos";
 
 export type UbicacionPublica = { lat: number; lng: number; exacta: boolean };
 

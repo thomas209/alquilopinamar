@@ -135,9 +135,9 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 ## Qué falta desarrollar
 
 ### Fase 1 — lo que queda
-- **Hecho (PR #12):** Admin > Contenido con la portada de la home y de cada zona (se sube a Cloudinary en `alquilopinamar/portadas/`; si no hay, se usa la foto de la primera propiedad). En el admin de propiedades el punto se elige tocando el mapa. La ficha tiene la sección Ubicación con mapa: círculo aproximado salvo que se marque "mostrar ubicación exacta"; las coordenadas reales no salen del servidor. Mapas con Leaflet + CARTO, sin API key.
-- **En la Mac:** después de `git pull` correr `npm install` (se sumaron `leaflet` y `react-leaflet`).
-- **Cierre:** prueba completa en celular con datos reales; Content-Security-Policy (permitir `*.basemaps.cartocdn.com` para el mapa).
+- **Hecho (PR #12):** Admin > Contenido con la portada de la home y de cada zona (se sube a Cloudinary en `alquilopinamar/portadas/`; si no hay, se usa la foto de la primera propiedad). En el admin de propiedades el punto se elige tocando el mapa. La ficha tiene la sección Ubicación con mapa: círculo aproximado salvo que se marque "mostrar ubicación exacta"; las coordenadas reales no salen del servidor. Mapas con MapLibre + OpenFreeMap (gratis, sin clave; CARTO pasó a pedir clave y se reemplazó en el PR #14).
+- **En la Mac:** después de `git pull` correr `npm install` (el mapa usa `maplibre-gl`).
+- **Cierre:** prueba completa en celular con datos reales; Content-Security-Policy (permitir `tiles.openfreemap.org` y `blob:` en worker-src para el mapa).
 - **Publicación:** dominio definitivo, Google Search Console.
 
 ### Fase 2

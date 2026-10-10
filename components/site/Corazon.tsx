@@ -27,7 +27,7 @@ export default function Corazon({ slug, titulo, grande = false, className }: { s
         if (alternar(slug)) setPop((n) => n + 1);
       }}
       className={cn(
-        "vidrio-circulo absolute z-[2] grid place-items-center rounded-full transition-transform duration-200 ease-app active:scale-90",
+        "vidrio-sobre-foto absolute z-[2] grid place-items-center rounded-full transition-transform duration-200 ease-app active:scale-90",
         grande ? "top-4 right-4 size-11" : "top-3 right-3 size-[38px]",
         className,
       )}

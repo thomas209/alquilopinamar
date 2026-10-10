@@ -31,8 +31,14 @@ export default function VistaMapa({ puntos, sinUbicacion }: { puntos: PuntoMapa[
       {/* Lista (solo desktop): lo que se ve en el mapa */}
       <div className="hidden md:block">
         <p className="text-[14px] text-texto-2" aria-live="polite">
-          {enVista.length === 0 ? "Ninguna en esta parte del mapa. Alejá o mové el mapa." : enVista.length === 1 ? "1 en el mapa" : enVista.length + " en el mapa"}
-          {sinUbicacion > 0 && " · " + sinUbicacion + (sinUbicacion === 1 ? " sin ubicación no aparece" : " sin ubicación no aparecen")}
+          {puntos.length === 0
+            ? ""
+            : enVista.length === 0
+              ? "Ninguna en esta parte del mapa. Alejá o mové el mapa."
+              : enVista.length === 1
+                ? "1 en el mapa"
+                : enVista.length + " en el mapa"}
+          {sinUbicacion > 0 && (puntos.length > 0 ? " · " : "") + sinUbicacion + (sinUbicacion === 1 ? " sin ubicación cargada: no aparece en el mapa." : " sin ubicación cargada: no aparecen en el mapa.")}
         </p>
         <ul className="mt-4 grid grid-cols-1 gap-x-5 gap-y-8 xl:grid-cols-2">
           {enVista.map((p) => (
@@ -48,7 +54,7 @@ export default function VistaMapa({ puntos, sinUbicacion }: { puntos: PuntoMapa[
         <MapaPrecios pines={pines} activo={activo} onElegir={setActivo} onVisibles={setVisibles} />
 
         {puntos.length === 0 && (
-          <div className="pointer-events-none absolute inset-x-4 top-4 z-[3] rounded-card bg-blanco/90 px-4 py-3 text-[14px] text-texto-2 backdrop-blur-md">
+          <div className="pointer-events-none absolute top-3 right-3 left-14 z-[3] rounded-card bg-blanco/90 px-4 py-3 text-[14px] text-texto-2 backdrop-blur-md">
             {sinUbicacion > 0 ? "Estas propiedades todavía no tienen la ubicación cargada. Miralas en la lista." : "No hay propiedades con esos filtros."}
           </div>
         )}

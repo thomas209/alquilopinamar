@@ -32,7 +32,7 @@ export default function PropiedadCard({ p, aBorde = false, prioridad = false, cl
           ))}
         </div>
         {p.isFeatured && (
-          <span className="vidrio-circulo absolute top-3 left-3 rounded-pastilla px-2.5 py-1.5 font-rotulo text-[10px] leading-none tracking-[0.08em] uppercase">Destacada</span>
+          <span className="vidrio-sobre-foto absolute top-3 left-3 rounded-pastilla px-2.5 py-1.5 font-rotulo text-[10px] leading-none tracking-[0.08em] uppercase">Destacada</span>
         )}
         <Corazon slug={p.slug} titulo={p.title} />
         {p.fotos.length > 1 && (

@@ -1,7 +1,7 @@
 "use client";
 // Mapas con MapLibre + OpenFreeMap (estilo Positron: gris claro, gratis, sin clave).
 // No importar directo: usar components/mapa/index.tsx (lo carga solo en el navegador).
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { CENTRO_PARTIDO, ESTILO_MAPA, RADIO_APROXIMADO } from "@/lib/mapa-datos";
@@ -58,9 +58,27 @@ function crearMapa(contenedor: HTMLDivElement, centro: [number, number], zoom: n
   return mapa;
 }
 
+// Mientras baja el estilo y las primeras calles: aviso suave encima (el mapa ya responde).
+function Cargando({ visible }: { visible: boolean }) {
+  return (
+    <div
+      aria-hidden={!visible}
+      className={
+        "pointer-events-none absolute inset-0 z-[1] grid place-items-center bg-gris-100 transition-opacity duration-300 ease-app " + (visible ? "opacity-100" : "opacity-0")
+      }
+    >
+      <span className="flex items-center gap-2 text-[13px] text-texto-2">
+        <span className="size-2 animate-pulse rounded-full bg-gris-400" />
+        Cargando mapa…
+      </span>
+    </div>
+  );
+}
+
 // Admin: tocar el mapa (o arrastrar el pin) para marcar la propiedad.
 export function MapaElegirLibre({ valor, centro, onChange }: { valor: Punto | null; centro: [number, number]; onChange: (p: Punto) => void }) {
   const caja = useRef<HTMLDivElement>(null);
+  const [listo, setListo] = useState(false);
   const mapa = useRef<maplibregl.Map | null>(null);
   const pin = useRef<maplibregl.Marker | null>(null);
   const alCambiar = useRef(onChange);
@@ -73,6 +91,7 @@ export function MapaElegirLibre({ valor, centro, onChange }: { valor: Punto | nu
     if (!caja.current) return;
     const inicio = valor ? ([valor.lat, valor.lng] as [number, number]) : centro;
     const m = crearMapa(caja.current, inicio, valor ? 16 : 14, false);
+    m.once("load", () => setListo(true));
     m.getCanvas().style.cursor = "crosshair";
     m.on("click", (e) => alCambiar.current({ lat: e.lngLat.lat, lng: e.lngLat.lng }));
     mapa.current = m;
@@ -111,17 +130,24 @@ export function MapaElegirLibre({ valor, centro, onChange }: { valor: Punto | nu
     // eslint-disable-next-line react-hooks/exhaustive-deps -- solo cuando cambia la zona
   }, [cLat, cLng]);
 
-  return <div ref={caja} className="h-full w-full" />;
+  return (
+    <div className="relative h-full w-full">
+      <div ref={caja} className="h-full w-full" />
+      <Cargando visible={!listo} />
+    </div>
+  );
 }
 
 // Ficha: punto exacto o circulo de zona aproximada. Gestos cooperativos:
 // la pagina se scrollea por encima del mapa (con dos dedos o Ctrl/⌘ se mueve el mapa).
 export function MapaVerLibre({ lat, lng, exacta }: { lat: number; lng: number; exacta: boolean }) {
   const caja = useRef<HTMLDivElement>(null);
+  const [listo, setListo] = useState(false);
 
   useEffect(() => {
     if (!caja.current) return;
     const m = crearMapa(caja.current, [lat, lng], exacta ? 16 : 14.5, true);
+    m.once("load", () => setListo(true));
     if (exacta) {
       const el = crearPin();
       el.style.cursor = "default";
@@ -136,7 +162,12 @@ export function MapaVerLibre({ lat, lng, exacta }: { lat: number; lng: number; e
     return () => m.remove();
   }, [lat, lng, exacta]);
 
-  return <div ref={caja} className="h-full w-full" />;
+  return (
+    <div className="relative h-full w-full">
+      <div ref={caja} className="h-full w-full" />
+      <Cargando visible={!listo} />
+    </div>
+  );
 }
 
 // Listado en mapa: un pin con el precio por propiedad.
@@ -165,6 +196,7 @@ export function MapaPreciosLibre({
   onVisibles: (ids: string[]) => void;
 }) {
   const caja = useRef<HTMLDivElement>(null);
+  const [listo, setListo] = useState(false);
   const mapa = useRef<maplibregl.Map | null>(null);
   const marcas = useRef(new Map<string, { marca: maplibregl.Marker; el: HTMLButtonElement }>());
   const cbs = useRef({ onElegir, onVisibles });
@@ -176,6 +208,7 @@ export function MapaPreciosLibre({
   useEffect(() => {
     if (!caja.current) return;
     const m = crearMapa(caja.current, CENTRO_PARTIDO, 12, false);
+    m.once("load", () => setListo(true));
     m.on("click", () => cbs.current.onElegir(null));
     mapa.current = m;
     const actuales = marcas.current;
@@ -233,5 +266,10 @@ export function MapaPreciosLibre({
     for (const [id, { marca, el }] of marcas.current) pintarPin(marca, el, id === activo);
   }, [activo, pines]);
 
-  return <div ref={caja} className="h-full w-full" />;
+  return (
+    <div className="relative h-full w-full">
+      <div ref={caja} className="h-full w-full" />
+      <Cargando visible={!listo} />
+    </div>
+  );
 }

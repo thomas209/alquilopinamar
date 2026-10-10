@@ -118,6 +118,13 @@
   backdrop-filter: blur(14px);
   box-shadow: var(--shadow-vidrio);
 }
+/* Circulo/etiqueta sobre fotos que se deslizan (cards y carrusel): SIN blur.
+   Chrome deja de pintar las fotos de un carrusel con scroll si encima hay un
+   backdrop-filter. Se ve igual que vidrio-circulo a este tamaño. */
+@utility vidrio-sobre-foto {
+  background-color: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-vidrio);
+}
 /* Fondo oscuro detras de una hoja */
 @utility velo {
   background-color: rgba(10, 10, 10, 0.3);

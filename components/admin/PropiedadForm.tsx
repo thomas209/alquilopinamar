@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Boton from "@/components/ui/Boton";
+import Icono from "@/components/ui/Icono";
 import { Campo, CampoArea, CampoSelect } from "@/components/ui/Campo";
 import { PastillaEstado, PastillaFiltro } from "@/components/ui/Pastilla";
 import Rotulo from "@/components/ui/Rotulo";
@@ -156,6 +157,17 @@ export default function PropiedadForm({
   const [aviso, setAviso] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [confirmarBaja, setConfirmarBaja] = useState(false);
+  // Lo ultimo guardado, para avisar si hay cambios sin guardar
+  const [guardado, setGuardado] = useState(() => JSON.stringify(v));
+  const sinGuardar = propiedad !== null && JSON.stringify(v) !== guardado;
+
+  // Avisa antes de cerrar o recargar la pagina con cambios sin guardar
+  useEffect(() => {
+    if (!sinGuardar) return;
+    const alSalir = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", alSalir);
+    return () => window.removeEventListener("beforeunload", alSalir);
+  }, [sinGuardar]);
 
   const set = <K extends keyof ValoresPropiedad>(campo: K, valor: ValoresPropiedad[K]) => {
     setAviso("");
@@ -193,6 +205,7 @@ export default function PropiedadForm({
       setError(res.error);
       return null;
     }
+    setGuardado(JSON.stringify(v));
     return res.datos.id;
   }
 
@@ -523,8 +536,20 @@ export default function PropiedadForm({
       {/* Barra fija de abajo: guardar siempre a mano */}
       <div className="vidrio-barra fixed inset-x-0 bottom-0 z-40 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
         <div className="mx-auto flex max-w-[760px] items-center gap-4">
-          <p role="status" className={"min-w-0 flex-1 text-[13px] " + (error ? "text-error" : "text-texto-2")}>
-            {error || aviso}
+          <p role="status" className={"flex min-w-0 flex-1 items-center gap-1.5 text-[13px] " + (error ? "text-error" : sinGuardar ? "text-negro" : aviso ? "text-ok" : "text-texto-2")}>
+            {error ? (
+              error
+            ) : sinGuardar ? (
+              <>
+                <span className="size-2 shrink-0 rounded-full bg-negro" aria-hidden="true" />
+                Hay cambios sin guardar
+              </>
+            ) : aviso ? (
+              <>
+                <Icono nombre="check" tamano={16} />
+                {aviso === "Guardado." ? "Cambios guardados" : aviso}
+              </>
+            ) : null}
           </p>
           <Boton type="submit" disabled={ocupado}>
             {ocupado ? "Guardando…" : propiedad ? "Guardar" : "Crear borrador"}

@@ -8,4 +8,5 @@ function Cargando() {
 
 export const MapaElegir = dynamic(() => import("./MapaLibre").then((m) => m.MapaElegirLibre), { ssr: false, loading: Cargando });
 export const MapaVer = dynamic(() => import("./MapaLibre").then((m) => m.MapaVerLibre), { ssr: false, loading: Cargando });
-export type { Punto } from "./MapaLibre";
+export const MapaPrecios = dynamic(() => import("./MapaLibre").then((m) => m.MapaPreciosLibre), { ssr: false, loading: Cargando });
+export type { PinPrecio, Punto } from "./MapaLibre";

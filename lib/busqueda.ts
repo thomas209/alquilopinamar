@@ -46,6 +46,7 @@ export type Busqueda = {
   mar: string; // "300" | "500" | "1000"
   com: string[]; // slugs de comodidades
   ver: number; // cuantas se muestran (multiplo de POR_TANDA)
+  vista: "" | "mapa"; // "" = lista
 };
 
 const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -71,6 +72,7 @@ export function leerBusqueda(sp: Record<string, string | string[] | undefined>):
     mar: DISTANCIAS_MAR.find((d) => d.url === uno(sp.mar))?.url ?? "",
     com: [...new Set(uno(sp.com).split(",").filter((c) => /^[a-z0-9-]{1,40}$/.test(c)))].slice(0, 12).sort(),
     ver: ver(uno(sp.ver)),
+    vista: uno(sp.vista) === "mapa" ? "mapa" : "",
   };
 }
 
@@ -104,7 +106,8 @@ export function urlDeBusqueda(b: Partial<Busqueda>): string {
   if (b.cochera) q.set("cochera", "1");
   if (b.mar) q.set("mar", b.mar);
   if (b.com?.length) q.set("com", [...b.com].sort().join(","));
-  if (b.ver && b.ver > POR_TANDA) q.set("ver", String(b.ver));
+  if (b.ver && b.ver > POR_TANDA && b.vista !== "mapa") q.set("ver", String(b.ver));
+  if (b.vista === "mapa") q.set("vista", "mapa");
   const s = q.toString();
   return "/propiedades" + (s ? "?" + s : "");
 }

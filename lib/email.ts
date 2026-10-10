@@ -10,6 +10,7 @@
 // el log: la consulta igual se guarda y se ve en /admin/consultas.
 import { Resend } from "resend";
 import ConsultaNuevaEmail, { type ConsultaNuevaEmailProps } from "@/emails/ConsultaNuevaEmail";
+import LinkIngresoEmail from "@/emails/LinkIngresoEmail";
 import { formatearCodigo } from "@/lib/formato";
 
 const FROM = process.env.RESEND_FROM_EMAIL || "AlquiloPinamar <onboarding@resend.dev>";
@@ -51,5 +52,35 @@ export async function avisarConsultaNueva(c: Omit<ConsultaNuevaEmailProps, "urlA
   } catch (e) {
     console.error("[email] No se pudo avisar la consulta " + c.id + ":", e);
     return false;
+  }
+}
+
+// Link de ingreso a la cuenta. En desarrollo, sin clave de Resend, el link se
+// muestra en la terminal para poder probar. Nunca tira error.
+export async function mandarLinkIngreso(para: string, url: string, minutos: number): Promise<"enviado" | "sin-config" | "error"> {
+  const r = resend();
+  if (!r) {
+    if (process.env.NODE_ENV !== "production") {
+      console.info("\n[email] Link para entrar (" + para + "):\n" + url + "\n");
+      return "enviado";
+    }
+    console.warn("[email] Falta RESEND_API_KEY: no se pudo mandar el link de ingreso");
+    return "sin-config";
+  }
+  try {
+    const { error } = await r.emails.send({
+      from: FROM,
+      to: para,
+      subject: "Tu link para entrar a AlquiloPinamar",
+      react: LinkIngresoEmail({ url, minutos }),
+    });
+    if (error) {
+      console.error("[email] Error de Resend mandando el link de ingreso:", error);
+      return "error";
+    }
+    return "enviado";
+  } catch (e) {
+    console.error("[email] No se pudo mandar el link de ingreso:", e);
+    return "error";
   }
 }

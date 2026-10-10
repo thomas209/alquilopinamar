@@ -143,7 +143,8 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 ### Fase 2
 - **2a Favoritos (hecho, PR #16):** corazón en cards y ficha, contador en el header, `/favoritos` (con "Ya no disponibles") y lista compartible `/lista?de=Nombre&p=slugs` con imagen para WhatsApp. En el navegador, sin cuenta (zustand, máximo 40).
 - **2b Vista mapa (hecho, PR #17):** botón flotante "Ver mapa / Ver lista" en `/propiedades` (`?vista=mapa`, noindex). Pines con precio corto; al tocar uno, tarjeta abajo. En desktop, lista a la izquierda que cambia al mover el mapa. Usa la ubicación pública (aproximada salvo punto exacto); las que no tienen punto no aparecen y se avisa.
-- **Siguiente: 2c** cuentas (link mágico, necesita Resend), 2d panel del propietario, 2e moderación.
+- **2c Cuentas (rama `cuentas`, falta probar y migrar producción):** `/ingresar` con link por mail (15 min, un uso, botón "Entrar" en `/ingresar/confirmar` para que los antivirus del mail no lo gasten), sesión de 30 días que se renueva sola al entrar (`proxy.ts`), `/cuenta` con datos y consultas, cerrar sesión. Tablas `User` y `LoginLink` (migración `20261010150000_usuarios`). Sin Resend, en la compu de desarrollo el link aparece en pantalla ("Modo prueba"). Ojo: sin dominio propio en Resend, los mails solo llegan al mail de la cuenta de Resend.
+- **Siguiente:** 2d panel del propietario (link mágico, necesita Resend), 2d panel del propietario, 2e moderación.
 Registro con link mágico, panel del propietario (publicar en pasos, editar, pausar, bandeja de consultas), moderación en el admin, favoritos y lista compartible, vista mapa, novedades.
 
 ### Fase 3

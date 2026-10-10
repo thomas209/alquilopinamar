@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import BotonFavoritos from "@/components/site/BotonFavoritos";
 import Logo from "@/components/site/Logo";
+import Icono from "@/components/ui/Icono";
 import { OPERACIONES_URL } from "@/lib/busqueda";
 import { cn } from "@/lib/cn";
 
@@ -85,6 +86,13 @@ function Barra({ activa }: { activa: string }) {
             Ver todas
           </Link>
           <BotonFavoritos />
+          <Link
+            href="/cuenta"
+            aria-label="Tu cuenta"
+            className="-ml-1 grid size-10 place-items-center rounded-full transition-[opacity,transform] duration-200 ease-app hover:opacity-70 active:scale-[0.97] md:-ml-2"
+          >
+            <Icono nombre="usuario" tamano={22} grosor={1.6} />
+          </Link>
         </div>
       </div>
       <div className="px-4 pb-2 md:hidden">

@@ -247,6 +247,11 @@ model SiteSetting {
 }
 
 // ───────────────────────── FASE 2 ─────────────────────────
+// Implementado en la migracion 20261010150000_usuarios con dos cambios:
+//  - User: un solo campo "phone" (telefono / WhatsApp) y sin token de ingreso.
+//  - Tabla LoginLink: links de ingreso (hash del token, 15 min, un solo uso,
+//    limite anti-abuso por mail e IP). La cuenta se crea recien al usar el link.
+// El schema real es prisma/schema.prisma.
 
 model User {
   id        String  @id @default(cuid())

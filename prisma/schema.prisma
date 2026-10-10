@@ -187,6 +187,46 @@ model Inquiry {
   @@index([email])
 }
 
+// ───────────────────────── FASE 2: usuarios ─────────────────────────
+
+// Usuario del sitio (visitante registrado y, desde el paso 2d, propietario).
+// Entra con link magico por mail, sin contraseña. Se crea recien al usar el link.
+model User {
+  id        String  @id @default(cuid())
+  email     String  @unique // siempre en minusculas
+  firstName String  @default("")
+  lastName  String  @default("")
+  phone     String? // telefono / WhatsApp
+  avatarUrl String?
+  bio       String? @db.Text // perfil de anfitrion (Fase 4)
+  isHost    Boolean @default(false) // pasa a true al crear su primera propiedad
+  isBlocked Boolean @default(false)
+
+  // Preparado para monetizar: hoy todos GRATIS
+  plan      OwnerPlan @default(GRATIS)
+  planUntil DateTime?
+
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Links de ingreso pedidos. Del token solo se guarda el hash.
+// Sirven 15 minutos y una sola vez. Tambien cuentan para el limite anti-abuso.
+model LoginLink {
+  id        String    @id @default(cuid())
+  email     String // minusculas
+  tokenHash String    @unique
+  volver    String? // a donde ir despues de entrar (ruta interna)
+  ipHash    String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipHash, createdAt])
+}
+
 model SiteSetting {
   key       String   @id // "home.hero", "sitio.contacto", ...
   value     Json
@@ -239,4 +279,8 @@ enum InquiryStatus {
   NUEVA
   RESPONDIDA
   CERRADA
+}
+
+enum OwnerPlan {
+  GRATIS
 }

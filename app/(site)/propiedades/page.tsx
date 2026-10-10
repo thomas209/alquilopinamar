@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import PropiedadCard from "@/components/site/PropiedadCard";
-import { Atenuable, Filtros, LimpiarFiltros, MarcoListado, VerMas } from "@/components/site/Listado";
+import { Atenuable, CambiarVista, Filtros, LimpiarFiltros, MarcoListado, VerMas } from "@/components/site/Listado";
+import VistaMapa from "@/components/site/VistaMapa";
 import { etiquetaDe, TIPOS } from "@/lib/etiquetas";
 import { leerBusqueda, OPERACIONES_URL, operacionDeUrl, tipoDeUrl, urlDeBusqueda, type Busqueda } from "@/lib/busqueda";
 import { metadataDePagina } from "@/lib/seo";
-import { comodidadesActivas, listarPropiedades, zonasActivas, type Orden } from "@/lib/sitio";
+import { comodidadesActivas, listarPropiedades, puntosDelMapa, zonasActivas, type FiltrosListado, type Orden } from "@/lib/sitio";
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -35,29 +36,36 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   });
 }
 
+function filtrosDe(b: Busqueda): FiltrosListado {
+  return {
+    operacion: operacionDeUrl(b.operacion),
+    zona: b.zona || undefined,
+    tipo: tipoDeUrl(b.tipo),
+    dormitorios: b.dorm ? Number(b.dorm) : undefined,
+    pileta: b.pileta || undefined,
+    mascotas: b.mascotas || undefined,
+    orden: (b.orden || undefined) as Orden | undefined,
+    moneda: b.moneda ? (b.moneda.toUpperCase() as "USD" | "ARS") : undefined,
+    precioMin: b.pmin ? Number(b.pmin) : undefined,
+    precioMax: b.pmax ? Number(b.pmax) : undefined,
+    banos: b.banos ? Number(b.banos) : undefined,
+    cochera: b.cochera || undefined,
+    marHasta: b.mar ? Number(b.mar) : undefined,
+    comodidades: b.com.length ? b.com : undefined,
+    limite: b.ver,
+  };
+}
+
 export default async function PropiedadesPage({ searchParams }: Props) {
   const b = leerBusqueda(await searchParams);
-  const [zonas, comodidades, { propiedades, total }] = await Promise.all([
+  const enMapa = b.vista === "mapa";
+  const [zonas, comodidades, lista, mapa] = await Promise.all([
     zonasActivas(),
     comodidadesActivas(),
-    listarPropiedades({
-      operacion: operacionDeUrl(b.operacion),
-      zona: b.zona || undefined,
-      tipo: tipoDeUrl(b.tipo),
-      dormitorios: b.dorm ? Number(b.dorm) : undefined,
-      pileta: b.pileta || undefined,
-      mascotas: b.mascotas || undefined,
-      orden: (b.orden || undefined) as Orden | undefined,
-      moneda: b.moneda ? (b.moneda.toUpperCase() as "USD" | "ARS") : undefined,
-      precioMin: b.pmin ? Number(b.pmin) : undefined,
-      precioMax: b.pmax ? Number(b.pmax) : undefined,
-      banos: b.banos ? Number(b.banos) : undefined,
-      cochera: b.cochera || undefined,
-      marHasta: b.mar ? Number(b.mar) : undefined,
-      comodidades: b.com.length ? b.com : undefined,
-      limite: b.ver,
-    }),
+    enMapa ? null : listarPropiedades(filtrosDe(b)),
+    enMapa ? puntosDelMapa({ ...filtrosDe(b), limite: undefined }) : null,
   ]);
+  const total = lista ? lista.total : mapa!.puntos.length + mapa!.sinUbicacion;
 
   return (
     <MarcoListado>
@@ -70,21 +78,26 @@ export default async function PropiedadesPage({ searchParams }: Props) {
       </div>
 
       <Atenuable>
-        {propiedades.length === 0 ? (
+        {mapa ? (
+          <VistaMapa puntos={mapa.puntos} sinUbicacion={mapa.sinUbicacion} />
+        ) : lista!.propiedades.length === 0 ? (
           <div className="mx-auto max-w-[1440px] px-4 py-20 md:px-12">
             <p className="font-titulo text-[22px] font-medium tracking-[-0.02em]">No hay propiedades con esos filtros.</p>
             <p className="mt-2 text-[15px] text-texto-2">Probá con otra zona o sacando algún filtro.</p>
             <LimpiarFiltros />
           </div>
         ) : (
-          <div className="mx-auto mt-6 grid max-w-[1440px] grid-cols-1 gap-x-5 gap-y-9 md:grid-cols-2 md:px-12 lg:grid-cols-3 2xl:grid-cols-4">
-            {propiedades.map((p, i) => (
-              <PropiedadCard key={p.id} p={p} aBorde prioridad={i < 2} className="animate-entrada" />
-            ))}
-          </div>
+          <>
+            <div className="mx-auto mt-6 grid max-w-[1440px] grid-cols-1 gap-x-5 gap-y-9 md:grid-cols-2 md:px-12 lg:grid-cols-3 2xl:grid-cols-4">
+              {lista!.propiedades.map((p, i) => (
+                <PropiedadCard key={p.id} p={p} aBorde prioridad={i < 2} className="animate-entrada" />
+              ))}
+            </div>
+            <VerMas busqueda={b} mostradas={lista!.propiedades.length} total={lista!.total} />
+          </>
         )}
-        <VerMas busqueda={b} mostradas={propiedades.length} total={total} />
       </Atenuable>
+      <CambiarVista busqueda={b} />
     </MarcoListado>
   );
 }

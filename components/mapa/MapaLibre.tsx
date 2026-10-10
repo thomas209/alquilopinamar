@@ -4,7 +4,7 @@
 import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { ESTILO_MAPA, RADIO_APROXIMADO } from "@/lib/mapa-datos";
+import { CENTRO_PARTIDO, ESTILO_MAPA, RADIO_APROXIMADO } from "@/lib/mapa-datos";
 
 // El worker se sirve desde public/vendor/ (lo copia scripts/maplibre-worker.mjs)
 maplibregl.setWorkerUrl("/vendor/maplibre-gl-worker-" + maplibregl.getVersion() + ".mjs");
@@ -135,6 +135,103 @@ export function MapaVerLibre({ lat, lng, exacta }: { lat: number; lng: number; e
     }
     return () => m.remove();
   }, [lat, lng, exacta]);
+
+  return <div ref={caja} className="h-full w-full" />;
+}
+
+// Listado en mapa: un pin con el precio por propiedad.
+export type PinPrecio = { id: string; lat: number; lng: number; etiqueta: string };
+
+const PIN_BASE =
+  "rounded-full px-2.5 py-1.5 text-[13px] leading-none font-semibold whitespace-nowrap tabular-nums shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition-[transform,background-color,color] duration-200 ease-app cursor-pointer";
+const PIN_NORMAL = PIN_BASE + " bg-blanco text-negro hover:scale-[1.06]";
+const PIN_ACTIVO = PIN_BASE + " bg-negro text-blanco scale-[1.08]";
+
+function pintarPin(marca: maplibregl.Marker, el: HTMLButtonElement, on: boolean) {
+  el.className = on ? PIN_ACTIVO : PIN_NORMAL;
+  el.setAttribute("aria-pressed", String(on));
+  marca.getElement().style.zIndex = on ? "2" : "";
+}
+
+export function MapaPreciosLibre({
+  pines,
+  activo,
+  onElegir,
+  onVisibles,
+}: {
+  pines: PinPrecio[];
+  activo: string | null;
+  onElegir: (id: string | null) => void;
+  onVisibles: (ids: string[]) => void;
+}) {
+  const caja = useRef<HTMLDivElement>(null);
+  const mapa = useRef<maplibregl.Map | null>(null);
+  const marcas = useRef(new Map<string, { marca: maplibregl.Marker; el: HTMLButtonElement }>());
+  const cbs = useRef({ onElegir, onVisibles });
+  useEffect(() => {
+    cbs.current = { onElegir, onVisibles };
+  });
+
+  // Mapa (una vez)
+  useEffect(() => {
+    if (!caja.current) return;
+    const m = crearMapa(caja.current, CENTRO_PARTIDO, 12, false);
+    m.on("click", () => cbs.current.onElegir(null));
+    mapa.current = m;
+    const actuales = marcas.current;
+    return () => {
+      actuales.clear();
+      m.remove();
+      mapa.current = null;
+    };
+  }, []);
+
+  // Pines + encuadre cuando cambian los resultados
+  useEffect(() => {
+    const m = mapa.current;
+    if (!m) return;
+    for (const { marca } of marcas.current.values()) marca.remove();
+    marcas.current.clear();
+
+    for (const p of pines) {
+      // MapLibre le pone sus clases al contenedor: el estilo va en el boton de adentro
+      const contenedor = document.createElement("div");
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = PIN_NORMAL;
+      el.textContent = p.etiqueta;
+      el.setAttribute("aria-label", "Ver propiedad, " + p.etiqueta);
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        cbs.current.onElegir(p.id);
+        // Que el pin quede a la vista, arriba de la tarjeta que aparece abajo
+        m.easeTo({ center: [p.lng, p.lat], offset: [0, -Math.round(m.getContainer().clientHeight * 0.12)], duration: 400 });
+      });
+      contenedor.appendChild(el);
+      const marca = new maplibregl.Marker({ element: contenedor, anchor: "center" }).setLngLat([p.lng, p.lat]).addTo(m);
+      marcas.current.set(p.id, { marca, el });
+    }
+
+    const avisar = () => {
+      const b = m.getBounds();
+      cbs.current.onVisibles(pines.filter((p) => b.contains([p.lng, p.lat])).map((p) => p.id));
+    };
+    if (pines.length > 0) {
+      const limites = new maplibregl.LngLatBounds();
+      for (const p of pines) limites.extend([p.lng, p.lat]);
+      m.fitBounds(limites, { padding: 70, maxZoom: 15, duration: 0 });
+    }
+    avisar();
+    m.on("moveend", avisar);
+    return () => {
+      m.off("moveend", avisar);
+    };
+  }, [pines]);
+
+  // Pin elegido: negro y arriba de los demas
+  useEffect(() => {
+    for (const [id, { marca, el }] of marcas.current) pintarPin(marca, el, id === activo);
+  }, [activo, pines]);
 
   return <div ref={caja} className="h-full w-full" />;
 }

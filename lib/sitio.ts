@@ -148,6 +148,29 @@ export const listarPropiedades = cache(async (f: FiltrosListado): Promise<{ prop
   return { propiedades: filas.map(aCard), total };
 }, "listado");
 
+// Vista mapa: todas las que cumplen los filtros y tienen ubicacion (sin paginar, con tope).
+// La ubicacion es la publica: aproximada salvo que el dueño elija mostrar el punto exacto.
+export type PuntoMapa = { card: CardPropiedad; lat: number; lng: number };
+const MAX_MAPA = 400;
+
+export const puntosDelMapa = cache(async (f: FiltrosListado): Promise<{ puntos: PuntoMapa[]; sinUbicacion: number }> => {
+  const where = whereListado(f);
+  const [filas, sinUbicacion] = await Promise.all([
+    prisma.property.findMany({
+      where: { ...where, lat: { not: null }, lng: { not: null } },
+      orderBy: ordenDe(f.orden),
+      take: MAX_MAPA,
+      select: { ...SELECT_CARD, lat: true, lng: true, showExactLocation: true },
+    }),
+    prisma.property.count({ where: { ...where, OR: [{ lat: null }, { lng: null }] } }),
+  ]);
+  const puntos = filas.flatMap((p) => {
+    const u = ubicacionPublica(p.id, p.lat, p.lng, p.showExactLocation);
+    return u ? [{ card: aCard(p), lat: u.lat, lng: u.lng }] : [];
+  });
+  return { puntos, sinUbicacion };
+}, "mapa");
+
 export const destacadas = cache(async (): Promise<CardPropiedad[]> => {
   const filas = await prisma.property.findMany({
     where: { ...PUBLICA, isFeatured: true },

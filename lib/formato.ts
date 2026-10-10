@@ -9,6 +9,15 @@ export function formatearMonto(monto: number, moneda: Moneda): string {
   return (moneda === "USD" ? "USD " : "$ ") + numero.format(monto);
 }
 
+// Precio corto para los pines del mapa: "USD 800", "USD 125 mil", "$ 1,2 M", "Consultar"
+export function precioCorto(monto: number | null, moneda: Moneda): string {
+  if (monto === null) return "Consultar";
+  const signo = moneda === "USD" ? "USD " : "$ ";
+  if (monto >= 1_000_000) return signo + (monto / 1_000_000).toLocaleString("es-AR", { maximumFractionDigits: 1 }) + " M";
+  if (monto >= 10_000) return signo + Math.round(monto / 1000).toLocaleString("es-AR") + " mil";
+  return signo + numero.format(monto);
+}
+
 // Texto que acompaña al precio. TOTAL (venta) no lleva nada.
 export const ETIQUETA_PERIODO: Record<Periodo, string> = {
   NOCHE: "noche",

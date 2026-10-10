@@ -97,7 +97,7 @@ export function Filtros({ busqueda, zonas, comodidades }: { busqueda: Busqueda; 
         <MasFiltros busqueda={busqueda} comodidades={comodidades} onAplicar={cambiar} />
         <SelectPastilla etiqueta="Orden" valor={busqueda.orden} onChange={(v) => cambiar({ orden: v })} opciones={ORDENES.map((o) => ({ valor: o.url as string, etiqueta: o.etiqueta as string }))} />
         {activos > 0 && (
-          <button type="button" onClick={() => ir(urlDeBusqueda({ operacion: busqueda.operacion, orden: busqueda.orden }))} className="h-11 shrink-0 px-2 text-[14px] text-link">
+          <button type="button" onClick={() => ir(urlDeBusqueda({ operacion: busqueda.operacion, orden: busqueda.orden, vista: busqueda.vista }))} className="h-11 shrink-0 px-2 text-[14px] text-link">
             Limpiar
           </button>
         )}
@@ -253,6 +253,25 @@ export function VerMas({ busqueda, mostradas, total }: { busqueda: Busqueda; mos
       <Boton variante="secundario" disabled={pendiente} onClick={() => ir(urlDeBusqueda({ ...busqueda, ver: busqueda.ver + POR_TANDA }))}>
         {pendiente ? "Cargando…" : "Ver más"}
       </Boton>
+    </div>
+  );
+}
+
+// Pastilla flotante abajo al centro para pasar de lista a mapa y al reves (como Airbnb).
+export function CambiarVista({ busqueda }: { busqueda: Busqueda }) {
+  const { ir, pendiente } = use(Navegacion);
+  const enMapa = busqueda.vista === "mapa";
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(20px+env(safe-area-inset-bottom))] z-30 flex justify-center">
+      <button
+        type="button"
+        disabled={pendiente}
+        onClick={() => ir(urlDeBusqueda({ ...busqueda, ver: 0, vista: enMapa ? "" : "mapa" }))}
+        className="pointer-events-auto inline-flex h-12 items-center gap-2 rounded-pastilla bg-negro px-5 text-[15px] font-medium text-blanco shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-transform duration-200 ease-app active:scale-[0.97] disabled:opacity-80"
+      >
+        <Icono nombre={enMapa ? "menu" : "pin"} tamano={18} />
+        {enMapa ? "Ver lista" : "Ver mapa"}
+      </button>
     </div>
   );
 }

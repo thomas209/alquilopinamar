@@ -6,12 +6,11 @@
 // - La sesion es una cookie firmada (HMAC) que dura 30 dias, igual que en Member.
 //   Esta separada por completo del login del admin (NextAuth).
 // - En cada pedido se vuelve a leer el usuario: si lo bloquean, deja de entrar.
-import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { COOKIE_SESION, leerCookieSesion } from "@/lib/sesion";
 
-export const COOKIE_SESION = "ap_sesion";
-const DURACION_SESION_S = 60 * 60 * 24 * 30; // 30 dias
 export const DURACION_LINK_MIN = 15;
 
 // Limites para pedir links (cuidan el cupo de mails y frenan abusos)
@@ -20,13 +19,6 @@ export const MAX_LINKS_POR_IP = 10; // por hora
 
 const MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const esMailValido = (m: string) => m.length <= 120 && MAIL.test(m);
-
-function secreto(): string {
-  const s = process.env.NEXTAUTH_SECRET;
-  if (s) return s;
-  if (process.env.NODE_ENV === "production") throw new Error("Falta NEXTAUTH_SECRET");
-  return "alquilopinamar-dev";
-}
 
 // ---------- Link magico ----------
 
@@ -52,38 +44,7 @@ export function rutaVolver(valor: unknown): string {
 
 // ---------- Sesion ----------
 
-function firmar(payload: string): string {
-  return createHmac("sha256", secreto())
-    .update("usuario:" + payload)
-    .digest("base64url");
-}
-
-export function valorCookieSesion(userId: string): string {
-  const vence = Date.now() + DURACION_SESION_S * 1000;
-  const payload = userId + "." + vence;
-  return payload + "." + firmar(payload);
-}
-
-export function leerCookieSesion(valor: string | undefined | null): string | null {
-  if (!valor) return null;
-  const partes = valor.split(".");
-  if (partes.length !== 3) return null;
-  const [userId, venceTxt, firma] = partes;
-  const esperada = Buffer.from(firmar(userId + "." + venceTxt));
-  const recibida = Buffer.from(firma);
-  if (recibida.length !== esperada.length || !timingSafeEqual(recibida, esperada)) return null;
-  const vence = Number(venceTxt);
-  if (!Number.isFinite(vence) || Date.now() > vence) return null;
-  return userId;
-}
-
-export const OPCIONES_COOKIE = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: DURACION_SESION_S,
-};
+export { COOKIE_SESION, OPCIONES_COOKIE, leerCookieSesion, valorCookieSesion } from "@/lib/sesion";
 
 // Lo que el navegador puede saber del usuario (nada interno).
 export const CAMPOS_PUBLICOS = { id: true, email: true, firstName: true, lastName: true, phone: true, whatsapp: true, isHost: true } as const;

@@ -19,58 +19,15 @@ import {
   PERIODOS_POR_OPERACION,
   TIPOS,
   type Estado,
-  type MonedaPrecio,
   type Operacion,
   type PeriodoPrecio,
-  type Tipo,
 } from "@/lib/etiquetas";
 import { formatearCodigo } from "@/lib/formato";
 import { pedir } from "@/lib/pedir";
+import { VALORES_VACIOS, type TarifaForm, type ValoresPropiedad } from "@/lib/valores-propiedad";
 
-type Tarifa = {
-  label: string;
-  period: PeriodoPrecio;
-  amount: string;
-  currency: MonedaPrecio;
-  startDate: string;
-  endDate: string;
-};
-
-export type ValoresPropiedad = {
-  title: string;
-  description: string;
-  operation: Operacion;
-  type: Tipo;
-  zoneId: string;
-  address: string;
-  lat: string;
-  lng: string;
-  showExactLocation: boolean;
-  distanceToSeaM: string;
-  rooms: string;
-  bedrooms: string;
-  bathrooms: string;
-  garages: string;
-  maxGuests: string;
-  coveredM2: string;
-  lotM2: string;
-  hasPool: boolean;
-  petsAllowed: boolean;
-  price: string;
-  currency: MonedaPrecio;
-  pricePeriod: PeriodoPrecio;
-  priceOnRequest: boolean;
-  expenses: string;
-  houseRules: string;
-  checkInTime: string;
-  checkOutTime: string;
-  minNights: string;
-  contactWhatsapp: string;
-  isFeatured: boolean;
-  featuredOrder: string;
-  amenityIds: string[];
-  rates: Tarifa[];
-};
+type Tarifa = TarifaForm;
+export type { ValoresPropiedad };
 
 type Existente = {
   id: string;
@@ -82,42 +39,9 @@ type Existente = {
   minimoFotos: number;
   falta: string[];
   valores: ValoresPropiedad;
-};
-
-const VACIA: ValoresPropiedad = {
-  title: "",
-  description: "",
-  operation: "ALQUILER_TEMPORARIO",
-  type: "CASA",
-  zoneId: "",
-  address: "",
-  lat: "",
-  lng: "",
-  showExactLocation: false,
-  distanceToSeaM: "",
-  rooms: "",
-  bedrooms: "",
-  bathrooms: "",
-  garages: "",
-  maxGuests: "",
-  coveredM2: "",
-  lotM2: "",
-  hasPool: false,
-  petsAllowed: false,
-  price: "",
-  currency: "USD",
-  pricePeriod: "NOCHE",
-  priceOnRequest: false,
-  expenses: "",
-  houseRules: "",
-  checkInTime: "",
-  checkOutTime: "",
-  minNights: "",
-  contactWhatsapp: "",
-  isFeatured: false,
-  featuredOrder: "",
-  amenityIds: [],
-  rates: [],
+  // Si la publico un propietario desde el panel
+  propietario?: { nombre: string; email: string; telefono: string | null } | null;
+  needsReview?: boolean;
 };
 
 function Bloque({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: React.ReactNode }) {
@@ -150,7 +74,7 @@ export default function PropiedadForm({
   propiedad: Existente | null;
 }) {
   const router = useRouter();
-  const [v, setV] = useState<ValoresPropiedad>(propiedad?.valores ?? { ...VACIA, zoneId: zonas[0]?.id ?? "" });
+  const [v, setV] = useState<ValoresPropiedad>(propiedad?.valores ?? { ...VALORES_VACIOS, zoneId: zonas[0]?.id ?? "" });
   const punto = v.lat !== "" && v.lng !== "" && Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.lng)) ? { lat: Number(v.lat), lng: Number(v.lng) } : null;
   const centroMapa = CENTRO_ZONA[zonas.find((z) => z.id === v.zoneId)?.slug ?? ""] ?? CENTRO_PARTIDO;
   const [error, setError] = useState("");
@@ -269,7 +193,27 @@ export default function PropiedadForm({
           {propiedad ? formatearCodigo(propiedad.code) : "Nueva propiedad"}
         </h1>
         {estado && <PastillaEstado tono={estado.tono}>{estado.etiqueta}</PastillaEstado>}
+        {propiedad?.needsReview && <PastillaEstado tono="error">Cambios sin revisar</PastillaEstado>}
       </div>
+      {propiedad?.propietario && (
+        <div className="mb-8 rounded-[22px] bg-gris-50 p-4 text-[14px]">
+          <Rotulo como="p">Publicada por un propietario</Rotulo>
+          <p className="mt-2">
+            {propiedad.propietario.nombre || "Sin nombre"} ·{" "}
+            <a href={"mailto:" + propiedad.propietario.email} className="text-link">
+              {propiedad.propietario.email}
+            </a>
+            {propiedad.propietario.telefono ? " · " + propiedad.propietario.telefono : ""}
+          </p>
+          <p className="mt-1 text-texto-2">
+            {propiedad.status === "EN_REVISION"
+              ? "Está esperando revisión: si está todo bien, tocá “Guardar y publicar”."
+              : propiedad.needsReview
+                ? "Cambió título, descripción o fotos después de publicarla. Revisalos y tocá “Guardar y marcar revisada”."
+                : "Los cambios que hagas acá también los ve el propietario."}
+          </p>
+        </div>
+      )}
 
       <Bloque titulo="Qué es">
         <div className="flex flex-col gap-4">
@@ -507,9 +451,9 @@ export default function PropiedadForm({
             </div>
           )}
           <div className="flex flex-wrap items-center gap-2">
-            {propiedad.status !== "PUBLICADA" && (
+            {(propiedad.status !== "PUBLICADA" || propiedad.needsReview) && (
               <Boton tamano="chico" disabled={ocupado} onClick={() => cambiarEstado("PUBLICADA")}>
-                Guardar y publicar
+                {propiedad.status === "PUBLICADA" ? "Guardar y marcar revisada" : "Guardar y publicar"}
               </Boton>
             )}
             {propiedad.status === "PUBLICADA" && (

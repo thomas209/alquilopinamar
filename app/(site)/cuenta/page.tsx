@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BotonSalir, DatosCuenta } from "@/components/site/Cuenta";
 import Foto from "@/components/site/Foto";
+import Boton from "@/components/ui/Boton";
 import Rotulo from "@/components/ui/Rotulo";
 import { prisma } from "@/lib/prisma";
 import { formatearCodigo, formatearDia, formatearFechaHora } from "@/lib/formato";
@@ -135,6 +136,20 @@ export default async function CuentaPage() {
           </p>
         </section>
       </div>
+
+      <section aria-labelledby="t-publicar" className="mt-16 flex flex-col gap-5 rounded-card bg-gris-50 px-6 py-8 md:flex-row md:items-center md:justify-between md:px-10">
+        <div>
+          <h2 id="t-publicar" className="font-titulo text-[22px] font-medium tracking-[-0.02em]">
+            {usuario.isHost ? "Tus propiedades" : "¿Tenés una propiedad en la costa?"}
+          </h2>
+          <p className="mt-2 text-[15px] text-texto-2">
+            {usuario.isHost ? "Editá tus publicaciones, pausalas o publicá otra." : "Publicala gratis: te guiamos paso a paso y la revisamos antes de que salga."}
+          </p>
+        </div>
+        <Boton href={usuario.isHost ? "/panel/propiedades" : "/panel/propiedades/nueva"} className="self-start md:self-auto">
+          {usuario.isHost ? "Ir a mis propiedades" : "Publicar mi propiedad"}
+        </Boton>
+      </section>
 
       <div className="mt-14 md:hidden">
         <BotonSalir />

@@ -10,6 +10,7 @@ type Contexto = { params: Promise<{ id: string }> };
 const PERMITIDOS = ["PUBLICADA", "PAUSADA", "BORRADOR"] as const;
 
 // Cambia el estado: publicar, pausar o volver a borrador.
+// Una "En revision" del panel se aprueba publicandola desde aca (la moderacion completa es la 2e).
 export async function POST(request: Request, { params }: Contexto) {
   const no = await exigirAdmin();
   if (no) return no;
@@ -35,6 +36,8 @@ export async function POST(request: Request, { params }: Contexto) {
     data: {
       status,
       rejectionReason: null,
+      // Al publicar, el admin da por revisados los cambios del propietario
+      ...(status === "PUBLICADA" ? { needsReview: false } : {}),
       ...(status === "PUBLICADA" && !p.publishedAt ? { publishedAt: new Date() } : {}),
     },
   });

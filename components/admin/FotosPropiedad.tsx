@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Boton from "@/components/ui/Boton";
 import Icono from "@/components/ui/Icono";
@@ -11,9 +11,22 @@ export type FotoAdmin = { id: string; url: string };
 type Firma = { url: string; campos: Record<string, string | number> };
 type Subida = { public_id: string; secure_url: string; version: number; signature: string; width: number; height: number };
 
-// Fotos de una propiedad en el admin: subir varias, ordenar, elegir portada y borrar.
+// Fotos de una propiedad: subir varias, ordenar, elegir portada y borrar.
 // Cada foto va directo del navegador a Cloudinary, en su calidad original.
-export default function FotosPropiedad({ propiedadId, iniciales, minimo }: { propiedadId: string; iniciales: FotoAdmin[]; minimo: number }) {
+// La usan el admin y el panel del propietario (cambia a que API le pega).
+export default function FotosPropiedad({
+  propiedadId,
+  iniciales,
+  minimo,
+  api = "/api/admin/propiedades/",
+  onCambio,
+}: {
+  propiedadId: string;
+  iniciales: FotoAdmin[];
+  minimo: number;
+  api?: string;
+  onCambio?: (fotos: FotoAdmin[]) => void;
+}) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [fotos, setFotos] = useState<FotoAdmin[]>(iniciales);
@@ -23,7 +36,12 @@ export default function FotosPropiedad({ propiedadId, iniciales, minimo }: { pro
   const [porBorrar, setPorBorrar] = useState<string | null>(null);
   const [arrastrada, setArrastrada] = useState<string | null>(null);
 
-  const base = "/api/admin/propiedades/" + propiedadId + "/fotos";
+  const base = api + propiedadId + "/fotos";
+
+  // Avisa las fotos actuales (el asistente del panel las recuerda entre pasos)
+  useEffect(() => {
+    onCambio?.(fotos);
+  }, [fotos, onCambio]);
   const bloqueado = ocupado || subiendo !== null;
 
   async function subirUna(archivo: File): Promise<FotoAdmin | string> {

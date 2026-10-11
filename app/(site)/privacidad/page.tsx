@@ -39,6 +39,9 @@ export default function PrivacidadPage() {
             <strong className="font-medium">Cuando consultás por una propiedad:</strong> tu nombre, mail, teléfono (si lo dejás), el mensaje y, si las indicás, las fechas y la cantidad de huéspedes.
           </li>
           <li>
+            <strong className="font-medium">Si creás una cuenta:</strong> tu mail y, si los cargás, tu nombre, apellido, teléfono y WhatsApp, y las consultas que hagas con la sesión iniciada. Entrás con un link que te mandamos al mail, sin contraseña. Podés pedir que borremos tu cuenta en cualquier momento.
+          </li>
+          <li>
             <strong className="font-medium">Para evitar abusos:</strong> un código derivado de tu dirección IP, que no permite saber cuál es la IP original. Sirve para limitar la cantidad de consultas seguidas.
           </li>
           <li>
@@ -48,7 +51,7 @@ export default function PrivacidadPage() {
             <strong className="font-medium">En tu navegador:</strong> para no tener que escribirlos de nuevo, tu nombre, mail y teléfono quedan guardados en tu propio dispositivo después de una consulta. Podés borrarlos limpiando los datos del sitio en tu navegador.
           </li>
         </ul>
-        <p>No usamos cookies de publicidad ni de seguimiento de terceros.</p>
+        <p>Si iniciás sesión, usamos una sola cookie propia, necesaria para mantenerte adentro: dura 30 días o hasta que cierres sesión. No usamos cookies de publicidad ni de seguimiento de terceros.</p>
       </Clausula>
 
       <Clausula id="finalidad" titulo="3. Para qué los usamos">

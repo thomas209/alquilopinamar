@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Instrument_Sans, DM_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import Analiticas from "@/components/site/Analiticas";
 import { SE_INDEXA, SITE_DESCRIPCION, SITE_NOMBRE, SITE_URL } from "@/lib/seo";
 
 // Tres tipografias con rol fijo (ver docs/05-design-system.md):
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es-AR" className={`${inter.variable} ${instrument.variable} ${dmMono.variable}`}>
       <body>
         {children}
-        <Analytics />
+        <Analiticas />
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-// AlquiloPinamar — schema de la Fase 1 (ver docs/03-schema-prisma-v1.md).
+// AlquiloPinamar — schema (ver docs/03-schema-prisma-v1.md).
 // Las fases siguientes agregan sus modelos con una migracion propia.
 // Todo cambio de aca lleva su migracion: nada de "db push" (docs/base-de-datos.md).
 
@@ -179,12 +179,59 @@ model Inquiry {
   status     InquiryStatus @default(NUEVA)
   adminNotes String?       @db.Text
   ipHash     String? // hash de la IP, solo para el limite anti-spam
+  // Si quien consulta tenia la sesion iniciada (Fase 2c). Las consultas sin cuenta siguen igual.
+  userId     String?
+  user       User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   @@index([propertyId, createdAt])
+  @@index([userId, createdAt])
   @@index([status, createdAt])
   @@index([email])
+}
+
+// Usuarios del sitio (Fase 2c): entran con link magico, sin contraseña.
+// Son los mismos que despues publican (isHost). Nada que ver con AdminUser.
+model User {
+  id        String  @id @default(cuid())
+  email     String  @unique // siempre en minusculas
+  firstName String  @default("")
+  lastName  String  @default("")
+  phone     String?
+  whatsapp  String?
+  avatarUrl String?
+  bio       String? @db.Text // perfil de anfitrion (Fase 4)
+  isHost    Boolean @default(false) // pasa a true al crear su primera propiedad
+  isBlocked Boolean @default(false)
+
+  // Preparado para monetizar: hoy todos GRATIS
+  plan      OwnerPlan @default(GRATIS)
+  planUntil DateTime?
+
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  inquiries Inquiry[]
+}
+
+// Links magicos pedidos. Se guarda el hash del token, nunca el token.
+// Vencen a los 15 minutos y son de un solo uso. La cuenta se crea recien
+// cuando se usa el link, asi un mail mal escrito no deja usuarios basura.
+// Tambien sirve para el limite de pedidos por mail y por IP.
+model LoginToken {
+  id        String    @id @default(cuid())
+  email     String
+  tokenHash String    @unique
+  volver    String? // a donde vuelve despues de entrar (solo rutas internas)
+  ipHash    String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipHash, createdAt])
 }
 
 model SiteSetting {
@@ -233,6 +280,10 @@ enum PricePeriod {
   MES
   TEMPORADA
   TOTAL
+}
+
+enum OwnerPlan {
+  GRATIS
 }
 
 enum InquiryStatus {

@@ -15,6 +15,7 @@
 | `Inquiry` | 1 | Consultas del formulario |
 | `SiteSetting` | 1 | Contenido editable de la home y datos del sitio |
 | `User` | 2 | Usuario registrado y propietario (misma cuenta) |
+| `LoginToken` | 2 | Links mágicos pedidos (hash del token, vencimiento, límite de pedidos) |
 | `Post` | 2 | Blog / novedades |
 | `AvailabilityBlock` | 3 | Fechas bloqueadas u ocupadas |
 | `Booking` | 3 | Solicitud de reserva (y seña en F4) |
@@ -264,10 +265,7 @@ model User {
   plan      OwnerPlan @default(GRATIS)
   planUntil DateTime?
 
-  // Link mágico: se guarda el hash del token, nunca el token
-  loginTokenHash      String?   @unique
-  loginTokenExpiresAt DateTime?
-  lastLoginAt         DateTime?
+  lastLoginAt DateTime? // el link mágico va en LoginToken
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -276,6 +274,22 @@ model User {
   inquiries  Inquiry[]
   bookings   Booking[]
   reviews    Review[]
+}
+
+// Links mágicos pedidos (Fase 2c). Se guarda el hash del token, nunca el token.
+// La cuenta se crea recién al usar el link. También sirve para el límite de pedidos.
+model LoginToken {
+  id        String    @id @default(cuid())
+  email     String
+  tokenHash String    @unique
+  volver    String?
+  ipHash    String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipHash, createdAt])
 }
 
 model Post {
@@ -461,7 +475,8 @@ enum ReviewStatus {
 | Migración | Contenido |
 |---|---|
 | `init` | Todo lo de Fase 1 |
-| `add_users_and_owner` | `User`, `Post`, `Property.ownerId`, `Inquiry.userId` |
+| `usuarios` (2c) | `User`, `LoginToken`, enum `OwnerPlan`, `Inquiry.userId` |
+| `add_owner` (2d) y `add_posts` | `Property.ownerId`, `Post` |
 | `add_availability_and_bookings` | `AvailabilityBlock`, `Booking` (sin campos de pago) |
 | `add_payments_and_reviews` | Campos de seña en `Booking`, `Review` |
 

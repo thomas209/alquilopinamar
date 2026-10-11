@@ -3,8 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { errorJson, leerJson } from "@/lib/api";
 import { datosDeConsulta, hashDeIp, MAX_CONSULTAS_POR_HORA } from "@/lib/consultas";
 import { avisarConsultaNueva } from "@/lib/email";
+import { usuarioActual } from "@/lib/usuarios";
 
-// Consulta desde la ficha de una propiedad. Publico, sin cuenta.
+// Consulta desde la ficha de una propiedad. Publico: no hace falta cuenta.
+// Si la persona tiene la sesion iniciada, la consulta queda en su cuenta.
 // Guarda la consulta y avisa por mail al admin (el mail nunca frena la consulta).
 export async function POST(request: Request) {
   const body = await leerJson(request);
@@ -37,8 +39,9 @@ export async function POST(request: Request) {
   }
 
   try {
+    const yo = await usuarioActual();
     const consulta = await prisma.inquiry.create({
-      data: { ...datos, propertyId: propiedad.id, ipHash },
+      data: { ...datos, propertyId: propiedad.id, ipHash, userId: yo?.id ?? null },
       select: { id: true, createdAt: true },
     });
 

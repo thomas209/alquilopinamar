@@ -7,6 +7,7 @@ import Icono from "@/components/ui/Icono";
 import Rotulo from "@/components/ui/Rotulo";
 import { pedir } from "@/lib/pedir";
 import type { Operacion } from "@/lib/etiquetas";
+import { useSesion } from "@/store/usuario";
 
 export type PropiedadConsulta = {
   slug: string;
@@ -35,6 +36,15 @@ function leerContacto(): Contacto | null {
     return null;
   }
 }
+// Con la sesion iniciada, los datos salen de la cuenta; lo que falte, de lo recordado.
+function contactoInicial(): Contacto | null {
+  const recordado = leerContacto();
+  const u = useSesion.getState().usuario;
+  if (!u) return recordado;
+  const nombre = (u.firstName + " " + u.lastName).trim();
+  return { name: nombre || recordado?.name || "", email: u.email, phone: u.whatsapp || u.phone || recordado?.phone || "" };
+}
+
 function guardarContacto(c: Contacto) {
   try {
     localStorage.setItem(CLAVE_CONTACTO, JSON.stringify(c));
@@ -124,7 +134,7 @@ type Errores = Partial<Record<"name" | "email" | "phone" | "message" | "checkIn"
 function HojaConsulta({ propiedad, whatsapp, onCerrar, onWhatsapp }: { propiedad: PropiedadConsulta; whatsapp: string | null; onCerrar: () => void; onWhatsapp: () => void }) {
   const idForm = useId();
   const temporario = propiedad.operation === "ALQUILER_TEMPORARIO";
-  const [contacto] = useState(leerContacto);
+  const [contacto] = useState(contactoInicial);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [errores, setErrores] = useState<Errores>({});

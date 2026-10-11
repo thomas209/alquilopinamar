@@ -10,6 +10,7 @@
 // el log: la consulta igual se guarda y se ve en /admin/consultas.
 import { Resend } from "resend";
 import ConsultaNuevaEmail, { type ConsultaNuevaEmailProps } from "@/emails/ConsultaNuevaEmail";
+import LinkIngresoEmail from "@/emails/LinkIngresoEmail";
 import { formatearCodigo } from "@/lib/formato";
 
 const FROM = process.env.RESEND_FROM_EMAIL || "AlquiloPinamar <onboarding@resend.dev>";
@@ -50,6 +51,36 @@ export async function avisarConsultaNueva(c: Omit<ConsultaNuevaEmailProps, "urlA
     return true;
   } catch (e) {
     console.error("[email] No se pudo avisar la consulta " + c.id + ":", e);
+    return false;
+  }
+}
+
+// Link magico para entrar a la cuenta. Devuelve si se mando.
+// En local, sin RESEND_API_KEY, el link se muestra en la terminal de "npm run dev" para poder probar.
+export async function mandarLinkIngreso(para: string, url: string, minutos: number): Promise<boolean> {
+  const r = resend();
+  if (!r) {
+    if (process.env.NODE_ENV !== "production") {
+      console.info("\n[email] Sin RESEND_API_KEY. Link para entrar como " + para + ":\n" + url + "\n");
+      return true;
+    }
+    console.error("[email] Falta RESEND_API_KEY: no se pudo mandar el link de ingreso.");
+    return false;
+  }
+  try {
+    const { error } = await r.emails.send({
+      from: FROM,
+      to: [para],
+      subject: "Tu link para entrar a AlquiloPinamar",
+      react: LinkIngresoEmail({ url, minutos }),
+    });
+    if (error) {
+      console.error("[email] Error de Resend mandando el link de ingreso:", error);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error("[email] No se pudo mandar el link de ingreso:", e);
     return false;
   }
 }

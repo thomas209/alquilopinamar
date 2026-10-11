@@ -1,6 +1,6 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 8 de octubre de 2026 (cierre de Fase 1: portadas y mapa).
+> Última actualización: 11 de octubre de 2026 (Fase 2c: cuentas con link mágico).
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
@@ -37,7 +37,7 @@ Fase 1 publicada. Lo que queda para cerrarla del todo:
 
 1. **Tommy:** entrar a https://alquilopinamar.vercel.app/admin con su usuario de producción y cargar las primeras propiedades reales.
 2. **Tommy:** secreto `PROD_DATABASE_URL` en GitHub para el backup diario (Settings → Secrets and variables → Actions).
-3. **Tommy:** cuenta de Resend → `RESEND_API_KEY` en Vercel (Secret) para que lleguen los avisos de consultas.
+3. **Hecho (11/10):** clave de Resend propia (`alquilopinamar`, solo envío) en Vercel y en el `.env`. Falta probar que llegue el aviso de una consulta en producción.
 4. **Tommy:** clave nueva de Cloudinary (la actual quedó en un chat): actualizarla en Vercel y en el `.env`.
 5. **Tommy:** titular del sitio y revisión legal de términos y privacidad; después cargar `NEXT_PUBLIC_TITULAR`, `NEXT_PUBLIC_CUIT`, `NEXT_PUBLIC_DOMICILIO`, `NEXT_PUBLIC_WHATSAPP` y `NEXT_PUBLIC_EMAIL_CONTACTO` en Vercel (Config) y redeploy.
 6. Dominio propio, Google Search Console y Content-Security-Policy (ver `docs/publicacion.md`).
@@ -59,7 +59,7 @@ Al pegar una clave en Vercel: correr el comando que la copia, escribir el nombre
 
 1. **Unir los PR #4 y #5** (en ese orden) y **probar el SEO y el paso 8** (ver arriba).
 2. **Definir el titular del sitio** (persona o empresa, CUIT y domicilio) y **hacer revisar los términos y la privacidad por un abogado** (ver `docs/publicacion.md` → Textos legales).
-3. **Crear la cuenta de Resend** con thomascaronia@gmail.com y cargar en el `.env`: `RESEND_API_KEY` (resend.com → API Keys) y `ADMIN_EMAIL=thomascaronia@gmail.com`. No pasar la clave por el chat.
+3. **Resend: hecho.** Clave propia en Vercel y en el `.env`. Cuando haya dominio, verificarlo en Resend y limitar la clave a ese dominio.
 4. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
 5. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
 6. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
@@ -143,7 +143,9 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 ### Fase 2
 - **2a Favoritos (hecho, PR #16):** corazón en cards y ficha, contador en el header, `/favoritos` (con "Ya no disponibles") y lista compartible `/lista?de=Nombre&p=slugs` con imagen para WhatsApp. En el navegador, sin cuenta (zustand, máximo 40).
 - **2b Vista mapa (hecho, PR #17):** botón flotante "Ver mapa / Ver lista" en `/propiedades` (`?vista=mapa`, noindex). Pines con precio corto; al tocar uno, tarjeta abajo. En desktop, lista a la izquierda que cambia al mover el mapa. Usa la ubicación pública (aproximada salvo punto exacto); las que no tienen punto no aparecen y se avisa.
-- **Siguiente: 2c** cuentas (link mágico, necesita Resend), 2d panel del propietario, 2e moderación.
+- **2c Cuentas (rama `fase2c-cuentas`, PR abierto, falta la prueba de Tommy):** ingreso con link mágico en `/cuenta/ingresar` (vence a los 15 min, un solo uso, se guarda el hash). El link lleva a `/cuenta/entrar` con un botón "Entrar" (así los antivirus del mail no lo gastan). La cuenta se crea al usar el link. Sesión con cookie firmada de 30 días (`ap_sesion`), separada del admin. `/cuenta`: datos (nombre, apellido, teléfono, WhatsApp), consultas hechas (por cuenta o por el mismo mail) y cerrar sesión. Header con acceso a la cuenta. El formulario de consulta se completa con los datos de la cuenta y la consulta queda asociada. Límite: 3 links cada 15 min por mail y 10 por hora por IP. Migración `20261011220000_usuarios` (tablas `User` y `LoginToken`, `Inquiry.userId`): aplicar en local con `npm run db:migrate`; a producción solo con backup y OK de Tommy.
+- **Ojo Resend:** sin dominio verificado los links solo llegan a thomascaronia@gmail.com. Para que entren otras personas hace falta el dominio (ver `docs/publicacion.md`).
+- **Siguiente:** 2d panel del propietario, 2e moderación.
 Registro con link mágico, panel del propietario (publicar en pasos, editar, pausar, bandeja de consultas), moderación en el admin, favoritos y lista compartible, vista mapa, novedades.
 
 ### Fase 3

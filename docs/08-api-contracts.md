@@ -112,11 +112,13 @@ Imagen para compartir una lista de favoritos.
 
 | Endpoint | Pedido | Respuesta |
 |---|---|---|
-| `POST /api/auth/usuario/request-link` | `{ "email", "volver"? }` | Siempre `{ "ok": true }` (no revela si el mail existe). `400` si el mail es inválido, `429` por exceso |
-| `GET /api/auth/usuario/verify?token=…` | — | Valida, consume el token, setea la cookie y redirige a `volver` o `/cuenta`. Si falla: `/cuenta/ingresar?error=invalid` |
-| `POST /api/auth/usuario/logout` | — | Borra la cookie. `{ "ok": true }` |
-| `GET /api/auth/usuario/me` | — | `{ "user": { "id", "email", "firstName", "lastName", "isHost" } }` o `{ "user": null }` |
-| `PATCH /api/panel/cuenta` | `{ "firstName", "lastName", "phone", "whatsapp", "bio"?, "avatarUrl"? }` | Usuario actualizado |
+| `POST /api/auth/usuario/pedir-link` | `{ "email", "volver"?, "sitio"? }` | Siempre `{ "ok": true }` (no revela si el mail tiene cuenta). `400` si el mail es inválido, `429` por exceso (3 cada 15 min por mail, 10 por hora por IP), `502` si no se pudo mandar el mail |
+| `POST /api/auth/usuario/entrar` | `{ "token" }` | Valida y consume el token, crea la cuenta si es la primera vez, setea la cookie. `{ "ok": true, "volver" }`. `400` si venció o ya se usó, `403` si la cuenta está bloqueada |
+| `POST /api/auth/usuario/salir` | — | Borra la cookie. `{ "ok": true }` |
+| `GET /api/auth/usuario/yo` | — | `{ "user": { "id", "email", "firstName", "lastName", "phone", "whatsapp", "isHost" } }` o `{ "user": null }`. Sin caché |
+| `PATCH /api/panel/cuenta` | `{ "firstName", "lastName", "phone", "whatsapp" }` | `{ "user" }`. `401` sin sesión |
+
+El link del mail lleva a la página `/cuenta/entrar?token=…`, que tiene un botón "Entrar" que llama a `POST /api/auth/usuario/entrar`. No se usa un `GET` que entre solo porque los antivirus y las vistas previas de los mails abren los links y gastarían el token.
 
 `volver` solo acepta rutas internas (empieza con `/` y no con `//`).
 

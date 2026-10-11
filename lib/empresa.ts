@@ -17,7 +17,7 @@ export const EMPRESA = {
 };
 
 // Fecha de la ultima version de los textos legales (cambiarla al editarlos)
-export const LEGALES_ACTUALIZADOS = "8 de octubre de 2026";
+export const LEGALES_ACTUALIZADOS = "11 de octubre de 2026";
 
 // "+54 9 2254 12-3456" a partir de "5492254123456" (solo para mostrar)
 export function whatsappLegible(n: string): string {

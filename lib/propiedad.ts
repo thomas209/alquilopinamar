@@ -98,7 +98,7 @@ export function datosDePropiedad(body: Record<string, unknown>) {
       startDate,
       endDate,
       minNights: enteroONull(t.minNights, 365),
-      isAvailable: t.isAvailable !== false,
+      isAvailable: true, // obsoleto: lo ocupado va por fechas (AvailabilityBlock)
       dailyAmount: numero(t.dailyAmount),
     });
   }

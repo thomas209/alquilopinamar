@@ -11,6 +11,9 @@ import Segmentado from "@/components/ui/Segmentado";
 import FotosPropiedad, { type FotoAdmin } from "@/components/admin/FotosPropiedad";
 import { MapaElegir } from "@/components/mapa";
 import EditorPeriodos from "@/components/panel/EditorPeriodos";
+import CalendarioOcupado from "@/components/panel/CalendarioOcupado";
+import { guardarOcupadosEn } from "@/components/panel/DisponibilidadRapida";
+import type { Rango } from "@/lib/disponibilidad";
 import { CENTRO_PARTIDO, CENTRO_ZONA } from "@/lib/mapa-datos";
 import {
   ESTADOS,
@@ -41,6 +44,7 @@ type Existente = {
   // Si la publico un propietario desde el panel
   propietario?: { nombre: string; email: string; telefono: string | null } | null;
   needsReview?: boolean;
+  ocupados?: Rango[];
 };
 
 function Bloque({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: React.ReactNode }) {
@@ -351,8 +355,18 @@ export default function PropiedadForm({
       </Bloque>
 
       {esTemporario && (
-        <Bloque titulo="Temporada: precios y disponibilidad" ayuda="Opcional. Períodos (mes, quincenas) con su precio; marcá los alquilados. En la ficha se ven como tarjetas con “Disponible” o “Alquilado”.">
+        <Bloque titulo="Temporada: precios y disponibilidad" ayuda="Opcional. Períodos (mes, quincenas) con su precio y su precio por noche. En la ficha se ven agrupados por mes, con lo libre y lo alquilado según las fechas ocupadas.">
           <EditorPeriodos periodos={v.rates} onChange={(rates) => set("rates", rates)} opciones={periodos} moneda={v.currency} periodoPorDefecto={v.pricePeriod} />
+        </Bloque>
+      )}
+
+      {esTemporario && propiedad && (
+        <Bloque titulo="Fechas ocupadas" ayuda="Se guarda al instante, aparte del botón Guardar. Las noches libres se ven en la ficha con su precio por noche.">
+          <CalendarioOcupado
+            iniciales={propiedad.ocupados ?? []}
+            periodos={v.rates.flatMap((t) => (t.label && t.startDate && t.endDate && t.endDate > t.startDate ? [{ label: t.label, startDate: t.startDate, endDate: t.endDate }] : []))}
+            onGuardar={guardarOcupadosEn("/api/admin/propiedades/" + propiedad.id + "/ocupado")}
+          />
         </Bloque>
       )}
 

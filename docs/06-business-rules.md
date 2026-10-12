@@ -90,14 +90,16 @@
 - Se revisa: fotos reales y suficientes, precio coherente, datos de contacto fuera de la descripción, ubicación dentro de las zonas.
 - Aprobar publica y avisa por mail. Rechazar exige motivo y avisa por mail.
 
-## Disponibilidad por períodos (temporada) — Fase 2
+## Disponibilidad por períodos y fechas ocupadas — Fase 2
 
-- En alquiler temporario, el propietario carga **períodos** (mes completo, 1ra y 2da quincena, o los que quiera) con entrada, salida, precio del período, valor por día opcional y estado: **disponible** o **alquilado**.
-- "Salida" es el día que se deja la casa: la 1ra quincena (1 → 16) y la 2da (16 → 1) no se pisan.
-- Un período disponible que se pisa con uno alquilado se muestra **no disponible** (si alquilan la 1ra de enero, "Enero completo" ya no se puede).
-- La ficha muestra solo los períodos que todavía no terminaron, con "Disponibilidad actualizada el …" (la última vez que cambió algún estado o fecha).
-- Tocar un período disponible abre la consulta con esas fechas. Si en la consulta eligen fechas alquiladas, se avisa pero se puede enviar igual.
-- El propietario cambia el estado desde el asistente o con el acceso rápido "Disponibilidad" en Mis propiedades.
+- En alquiler temporario, el propietario carga **períodos** con el nombre que quiera ("Enero completo", "1ra quincena de enero"…): entrada, salida, precio del período y **precio por noche** (para las noches sueltas). El nombre es el título de cada tarjeta en la ficha.
+- Lo ocupado se marca **por fechas** en un calendario (entrada y salida), o con el atajo "Alquilado" de cada período. "Salida" es el día que se deja la casa: esa noche queda libre.
+- Estado de cada período, calculado con las fechas ocupadas:
+  - **Disponible:** todas sus noches libres.
+  - **Alquilado en parte:** quedan noches sueltas. La ficha las muestra ("11 al 15 ene · 5 noches") con el total a precio por noche, y se consultan con un toque. Un mes que contiene sus quincenas no repite las noches libres.
+  - **Alquilado:** ninguna noche libre.
+- La ficha muestra solo lo que todavía no pasó, agrupado por mes, con "Disponibilidad actualizada el …", un calendario de solo lectura y, en la tarjeta de precio, el **próximo disponible**.
+- En la consulta, si eligen noches ocupadas, se avisa pero se puede enviar igual.
 
 ## Disponibilidad y reservas (Fase 3)
 

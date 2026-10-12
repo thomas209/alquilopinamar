@@ -19,6 +19,9 @@ import { pedir } from "@/lib/pedir";
 import { faltaParaPublicar, MIN_DESCRIPCION, minimoDeFotos } from "@/lib/requisitos";
 import type { ValoresPropiedad } from "@/lib/valores-propiedad";
 import EditorPeriodos from "@/components/panel/EditorPeriodos";
+import CalendarioOcupado from "@/components/panel/CalendarioOcupado";
+import { guardarOcupadosEn } from "@/components/panel/DisponibilidadRapida";
+import type { Rango } from "@/lib/disponibilidad";
 
 const API = "/api/panel/propiedades/";
 
@@ -31,6 +34,7 @@ const PASOS = [
   { id: "fotos", corto: "Fotos", titulo: "Fotos", bajada: "Las fotos son lo primero que se mira. Subilas en la mejor calidad que tengas: horizontales, con luz natural." },
   { id: "comodidades", corto: "Comodidades", titulo: "Comodidades", bajada: "Marcá todo lo que tiene. Se usan en los filtros de búsqueda." },
   { id: "precio", corto: "Precio", titulo: "Precio", bajada: "Es el que se ve en el listado y por el que se ordena." },
+  { id: "disponibilidad", corto: "Disponibilidad", titulo: "Disponibilidad", bajada: "Marcá las fechas que ya están alquiladas. Las noches que queden libres se ven en la publicación con su precio por noche." },
   { id: "reglas", corto: "Reglas", titulo: "Reglas y contacto", bajada: "Condiciones de la estadía y el WhatsApp donde te van a escribir." },
   { id: "revision", corto: "Revisión", titulo: "Revisá y enviá", bajada: "" },
 ] as const;
@@ -70,19 +74,29 @@ export default function Asistente({
   pasoInicial,
   faltaCuenta,
   inicial,
+  ocupados = [],
 }: {
   zonas: Zona[];
   amenities: Amenity[];
   propiedad: PropiedadPanel | null;
-  pasoInicial: number;
+  pasoInicial: number | "fotos" | "revision"; // numero de paso (desde 0) o el id de un paso
   faltaCuenta: string[];
   inicial: ValoresPropiedad;
+  ocupados?: Rango[];
 }) {
   const router = useRouter();
   const [v, setV] = useState<ValoresPropiedad>(propiedad?.valores ?? inicial);
   const [id, setId] = useState<string | null>(propiedad?.id ?? null);
   const [code, setCode] = useState<number | null>(propiedad?.code ?? null);
-  const [paso, setPaso] = useState(propiedad ? Math.min(Math.max(pasoInicial, 0), PASOS.length - 1) : 0);
+  // La disponibilidad aplica solo a alquiler temporario
+  const pasos = PASOS.filter((p) => p.id !== "disponibilidad" || v.operation === "ALQUILER_TEMPORARIO");
+  const [paso, setPasoCrudo] = useState(() => {
+    if (!propiedad) return 0;
+    const lista = PASOS.filter((p) => p.id !== "disponibilidad" || propiedad.valores.operation === "ALQUILER_TEMPORARIO");
+    if (typeof pasoInicial === "string") return lista.findIndex((p) => p.id === pasoInicial);
+    return Math.min(Math.max(pasoInicial, 0), lista.length - 1);
+  });
+  const setPaso = (i: number) => setPasoCrudo(Math.min(Math.max(i, 0), pasos.length - 1));
   const [guardado, setGuardado] = useState(() => JSON.stringify(propiedad?.valores ?? null));
   // Las fotos se recuerdan aca: el paso de fotos se desmonta al cambiar de paso
   const [imagenes, setImagenes] = useState<FotoAdmin[]>(propiedad?.imagenes ?? []);
@@ -125,7 +139,7 @@ export default function Asistente({
 
   // Lo minimo de cada paso para poder seguir
   function validarPaso(i: number): string {
-    const p = PASOS[i].id;
+    const p = pasos[i].id;
     if (p === "que" && !v.zoneId) return "Elegí la zona.";
     if (p === "descripcion" && v.title.trim().length < 5) return "Poné un título un poco más largo.";
     return "";
@@ -219,8 +233,8 @@ export default function Asistente({
     maxGuests: n(v.maxGuests),
     fotos,
   });
-  const actual = PASOS[paso];
-  const ultimo = paso === PASOS.length - 1;
+  const actual = pasos[Math.min(paso, pasos.length - 1)];
+  const ultimo = paso >= pasos.length - 1;
 
   return (
     <div className="mx-auto max-w-[760px] px-4 pt-6 pb-36 md:px-0 md:pt-10" ref={arriba}>
@@ -228,14 +242,14 @@ export default function Asistente({
       <div className="scroll-mt-24">
         <div className="flex items-center justify-between gap-4">
           <Rotulo>
-            {code ? formatearCodigo(code) + " · " : ""}Paso {paso + 1} de {PASOS.length}
+            {code ? formatearCodigo(code) + " · " : ""}Paso {paso + 1} de {pasos.length}
           </Rotulo>
           <Link href="/panel/propiedades" className="text-[14px] text-link hover:opacity-70">
             {id ? "Guardar y salir" : "Salir"}
           </Link>
         </div>
         <div className="mt-3 flex gap-1" role="list" aria-label="Pasos">
-          {PASOS.map((p, i) => (
+          {pasos.map((p, i) => (
             <button
               key={p.id}
               type="button"
@@ -422,6 +436,17 @@ export default function Asistente({
           </div>
         )}
 
+        {actual.id === "disponibilidad" &&
+          (id ? (
+            <CalendarioOcupado
+              iniciales={ocupados}
+              periodos={v.rates.flatMap((t) => (t.label && t.startDate && t.endDate && t.endDate > t.startDate ? [{ label: t.label, startDate: t.startDate, endDate: t.endDate }] : []))}
+              onGuardar={guardarOcupadosEn(API + id + "/ocupado")}
+            />
+          ) : (
+            <p className="text-[15px] text-texto-2">Primero creá el borrador.</p>
+          ))}
+
         {actual.id === "reglas" && (
           <div className="flex flex-col gap-5">
             {esTemporario && (
@@ -461,7 +486,7 @@ export default function Asistente({
             faltaCuenta={faltaCuenta}
             propiedad={propiedad}
             ocupado={ocupado}
-            irA={(pasoId) => saltarA(PASOS.findIndex((p) => p.id === pasoId))}
+            irA={(pasoId) => saltarA(pasos.findIndex((p) => p.id === pasoId))}
             onEstado={estado}
           />
         )}

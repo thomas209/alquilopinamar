@@ -21,16 +21,17 @@ export default async function EditarPropiedadPage({ params, searchParams }: { pa
       amenities: { select: { amenityId: true } },
       rates: { orderBy: { sortOrder: "asc" } },
       images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true } },
+      blocks: { orderBy: { startDate: "asc" }, select: { startDate: true, endDate: true } },
     },
   });
   if (!p) notFound();
 
   const valores = valoresDesdeBase(p);
   const [zonas, amenities] = await opcionesDelAsistente({ zoneId: p.zoneId, amenityIds: valores.amenityIds });
-  // ?paso=N (1 a 9). Sin paso: un borrador sin fotos suficientes abre en Fotos; el resto, en la revision.
+  // ?paso=N (desde 1). Sin paso: un borrador sin fotos suficientes abre en Fotos; el resto, en la revision.
   const pedido = Number(typeof sp.paso === "string" ? sp.paso : NaN);
   const sinFotos = p.status === "BORRADOR" && p.images.length < minimoDeFotos(p.type);
-  const paso = Number.isInteger(pedido) && pedido >= 1 ? pedido - 1 : sinFotos ? 4 : 8;
+  const paso = Number.isInteger(pedido) && pedido >= 1 ? pedido - 1 : sinFotos ? ("fotos" as const) : ("revision" as const);
 
   return (
     <Asistente
@@ -51,6 +52,7 @@ export default async function EditarPropiedadPage({ params, searchParams }: { pa
       pasoInicial={paso}
       faltaCuenta={faltaEnLaCuenta(yo)}
       inicial={valores}
+      ocupados={p.blocks.map((b) => ({ desde: b.startDate.toISOString().slice(0, 10), hasta: b.endDate.toISOString().slice(0, 10) }))}
     />
   );
 }

@@ -8,7 +8,7 @@ import Rotulo from "@/components/ui/Rotulo";
 import { pedir } from "@/lib/pedir";
 import type { Operacion } from "@/lib/etiquetas";
 import { useSesion } from "@/store/usuario";
-import { pisaAlquilado } from "@/lib/disponibilidad";
+import { pisaOcupado } from "@/lib/disponibilidad";
 
 export type PropiedadConsulta = {
   slug: string;
@@ -17,7 +17,7 @@ export type PropiedadConsulta = {
   operation: Operacion;
   maxGuests: number | null;
   minNights: number | null;
-  alquilados?: { desde: string; hasta: string }[]; // periodos alquilados: se avisa si eligen esas fechas
+  ocupados?: { desde: string; hasta: string }[]; // fechas ocupadas: se avisa si eligen esas fechas
 };
 
 const MENSAJES: Record<Operacion, string> = {
@@ -152,7 +152,7 @@ export function HojaConsulta({
   const [contacto] = useState(contactoInicial);
   const [checkIn, setCheckIn] = useState(fechas?.desde ?? "");
   const [checkOut, setCheckOut] = useState(fechas?.hasta ?? "");
-  const fechasAlquiladas = Boolean(checkIn && checkOut && checkOut > checkIn && pisaAlquilado(checkIn, checkOut, propiedad.alquilados ?? []));
+  const fechasAlquiladas = Boolean(checkIn && checkOut && checkOut > checkIn && pisaOcupado(checkIn, checkOut, propiedad.ocupados ?? []));
   const [errores, setErrores] = useState<Errores>({});
   const [errorGeneral, setErrorGeneral] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -277,7 +277,7 @@ export function HojaConsulta({
             <Campo etiqueta="Salida" type="date" name="checkOut" min={checkIn ? masDias(checkIn, 1) : hoyIso()} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} error={errores.checkOut} />
             {fechasAlquiladas && (
               <p role="status" className="col-span-2 -mt-1 rounded-campo bg-gris-50 px-4 py-3 text-[14px] leading-relaxed">
-                Esas fechas figuran como alquiladas. Podés elegir otras o consultar igual por si se libera.
+                Algunas de esas noches figuran como ocupadas. Podés elegir otras o consultar igual por si se liberan.
               </p>
             )}
             <Campo

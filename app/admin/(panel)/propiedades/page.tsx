@@ -42,7 +42,7 @@ export default async function AdminPropiedadesPage({
       where,
       orderBy: { updatedAt: "desc" },
       take: 100,
-      include: { zone: { select: { name: true } }, _count: { select: { images: true } } },
+      include: { zone: { select: { name: true } }, owner: { select: { email: true } }, _count: { select: { images: true } } },
     }),
     prisma.zone.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
   ]);
@@ -124,11 +124,13 @@ export default async function AdminPropiedadesPage({
                       <span>
                         {p._count.images} {p._count.images === 1 ? "foto" : "fotos"}
                       </span>
+                      {p.owner && <span>Propietario: {p.owner.email}</span>}
                     </span>
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1.5">
                     <PastillaEstado tono={est?.tono ?? "neutro"}>{est?.etiqueta ?? p.status}</PastillaEstado>
                     {p.isFeatured && <PastillaEstado tono="negro">Destacada</PastillaEstado>}
+                    {p.needsReview && <PastillaEstado tono="error">Cambios sin revisar</PastillaEstado>}
                   </span>
                 </Link>
               </li>

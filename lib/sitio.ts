@@ -293,7 +293,13 @@ export const propiedadPorSlug = cache(async (slug: string) => {
       amount: Number(t.amount),
       currency: t.currency as MonedaPrecio,
       minNights: t.minNights,
+      // Texto "AAAA-MM-DD" (la cache guarda JSON)
+      startDate: t.startDate ? t.startDate.toISOString().slice(0, 10) : null,
+      endDate: t.endDate ? t.endDate.toISOString().slice(0, 10) : null,
+      isAvailable: t.isAvailable,
+      dailyAmount: t.dailyAmount === null ? null : Number(t.dailyAmount),
     })),
+    disponibilidadActualizada: p.availabilityUpdatedAt?.toISOString() ?? null,
   };
 }, "ficha");
 

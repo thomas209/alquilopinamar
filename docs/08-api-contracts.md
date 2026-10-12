@@ -177,20 +177,22 @@ El orden de `images` y `rates` en el arreglo es el orden guardado. Pasar a `PUBL
 
 ## Panel del propietario (`/api/panel/*`, cookie de usuario) — Fase 2
 
-Todos verifican que el recurso sea del usuario; si no, `403`.
+El proxy corta con `401` si no hay cookie válida. Cada endpoint vuelve a leer el usuario de la base y verifica que la propiedad sea suya; si no, `404` (no se revela que existe).
 
 | Endpoint | Acción |
 |---|---|
-| `GET /api/panel/propiedades` | Mis propiedades |
-| `POST /api/panel/propiedades` | Crea borrador (mínimo: operación y tipo) |
-| `GET /api/panel/propiedades/[id]` | Detalle |
-| `PATCH /api/panel/propiedades/[id]` | Guarda un paso (mismo cuerpo que admin, parcial). No acepta `status`, `isFeatured` ni `ownerId` |
+| `POST /api/panel/propiedades` | Crea borrador (mínimo: título, operación, tipo y zona). Marca al usuario como anfitrión. Tope de 50 por cuenta |
+| `PATCH /api/panel/propiedades/[id]` | Guarda (mismo cuerpo que el admin). Ignora `isFeatured` y `featuredOrder`. Rechazada → borrador. Publicada: no puede quedar incompleta; si cambia título o descripción queda `needsReview` |
 | `DELETE /api/panel/propiedades/[id]` | Baja lógica |
-| `POST /api/panel/propiedades/[id]/enviar` | Borrador/rechazada → en revisión. `400` con lo que falta |
-| `POST /api/panel/propiedades/[id]/pausar` · `/reactivar` | Publicada ↔ pausada |
-| `POST /api/panel/upload` | Igual que el de admin |
-| `GET /api/panel/consultas?propiedad=&estado=` | Mis consultas |
-| `PATCH /api/panel/consultas/[id]` | `{ "status" }` |
+| `POST /api/panel/propiedades/[id]/estado` | `{ "accion": "enviar" \| "retirar" \| "pausar" \| "reanudar" }`. `enviar` pide la propiedad completa y nombre + teléfono/WhatsApp en la cuenta; `reanudar` solo si ya fue aprobada |
+| `PATCH /api/panel/propiedades/[id]/disponibilidad` | `{ "rateId", "isAvailable" }`: acceso rápido para marcar un período alquilado o disponible |
+| `POST /api/panel/propiedades/[id]/fotos/firma` | Igual que el del admin |
+| `POST · PATCH /api/panel/propiedades/[id]/fotos` | Registrar foto · ordenar. Si está publicada, queda `needsReview` |
+| `DELETE /api/panel/propiedades/[id]/fotos/[fotoId]` | Borrar foto. Si está publicada, queda `needsReview` |
+| `GET /api/panel/consultas?propiedad=&estado=` (2d-2) | Mis consultas |
+| `PATCH /api/panel/consultas/[id]` (2d-2) | `{ "status" }` |
+
+La lógica de fotos es la misma para admin y panel (`lib/fotos.ts`).
 
 ## Fase 3 — Disponibilidad y reservas
 

@@ -1,6 +1,6 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 11 de octubre de 2026 (Fase 2c: cuentas con link mágico).
+> Última actualización: 11 de octubre de 2026 (Fase 2d-1: panel del propietario).
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
@@ -145,7 +145,10 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - **2b Vista mapa (hecho, PR #17):** botón flotante "Ver mapa / Ver lista" en `/propiedades` (`?vista=mapa`, noindex). Pines con precio corto; al tocar uno, tarjeta abajo. En desktop, lista a la izquierda que cambia al mover el mapa. Usa la ubicación pública (aproximada salvo punto exacto); las que no tienen punto no aparecen y se avisa.
 - **2c Cuentas (rama `fase2c-cuentas`, PR abierto, falta la prueba de Tommy):** ingreso con link mágico en `/cuenta/ingresar` (vence a los 15 min, un solo uso, se guarda el hash). El link lleva a `/cuenta/entrar` con un botón "Entrar" (así los antivirus del mail no lo gastan). La cuenta se crea al usar el link. Sesión con cookie firmada de 30 días (`ap_sesion`), separada del admin. `/cuenta`: datos (nombre, apellido, teléfono, WhatsApp), consultas hechas (por cuenta o por el mismo mail) y cerrar sesión. Header con acceso a la cuenta. El formulario de consulta se completa con los datos de la cuenta y la consulta queda asociada. Límite: 3 links cada 15 min por mail y 10 por hora por IP. Migración `20261011220000_usuarios` (tablas `User` y `LoginToken`, `Inquiry.userId`): aplicar en local con `npm run db:migrate`; a producción solo con backup y OK de Tommy.
 - **Ojo Resend:** sin dominio verificado los links solo llegan a thomascaronia@gmail.com. Para que entren otras personas hace falta el dominio (ver `docs/publicacion.md`).
-- **Siguiente:** 2d panel del propietario, 2e moderación.
+- **2d-1 Panel del propietario (rama `fase2d-panel`):** `/panel/propiedades` (mis propiedades con estado y motivo de rechazo) y asistente en 9 pasos (qué, descripción, características, ubicación, fotos, comodidades, precio, reglas y contacto, revisión) para crear y editar. Se guarda como borrador al pasar de paso. Enviar a revisión pide la propiedad completa y nombre + teléfono/WhatsApp en la cuenta. Publicada: edita al instante; cambios de título, descripción o fotos quedan "Cambios sin revisar" en el admin. Pausar/reanudar y eliminar. El proxy protege `/panel` y `/api/panel`. En el admin: se ve el propietario y se aprueba con "Guardar y publicar". Migración `20261011230000_propietarios` (solo agrega 3 columnas a Property).
+- **Cuando haya dominio:** cambiar "Publicá tu propiedad" de `/contacto` y del footer para que lleve a `/panel/propiedades/nueva` (hoy siguen por WhatsApp porque los links de ingreso solo llegan a Tommy).
+- **Disponibilidad por períodos (misma rama, PR #21):** como en las inmobiliarias de la costa. El propietario (o el admin) carga períodos de temporada (botón "Cargar temporada de verano": enero y febrero completos y por quincena) con precio, valor por día y estado Disponible/Alquilado. En la ficha: "Disponibilidad y precios" en tarjetas (deslizables en el celular), lo pisado por un alquilado sale "No disponible", "Actualizada el …", y tocar uno disponible abre la consulta con esas fechas. Acceso rápido "Disponibilidad" en Mis propiedades. Migración `20261012000000_disponibilidad` (solo agrega).
+- **Siguiente:** 2d-2 consultas del propietario, 2e moderación.
 Registro con link mágico, panel del propietario (publicar en pasos, editar, pausar, bandeja de consultas), moderación en el admin, favoritos y lista compartible, vista mapa, novedades.
 
 ### Fase 3

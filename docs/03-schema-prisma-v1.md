@@ -148,9 +148,11 @@ model Property {
   rates     PropertyRate[]
   inquiries Inquiry[]
 
-  // FASE 2
-  ownerId String?
-  owner   User?   @relation(fields: [ownerId], references: [id])
+  // FASE 2 (2d)
+  ownerId     String?
+  owner       User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  submittedAt DateTime? // cuándo la mandó a revisión (cola de moderación)
+  needsReview Boolean   @default(false) // publicada con cambios de título, descripción o fotos sin revisar
 
   // FASE 3 / 4
   blocks   AvailabilityBlock[]
@@ -160,7 +162,7 @@ model Property {
   @@index([status, operation, zoneId, type])
   @@index([status, operation, currency, price])
   @@index([status, isFeatured, featuredOrder])
-  @@index([ownerId])
+  @@index([ownerId, status])
 }
 
 model PropertyImage {
@@ -476,7 +478,9 @@ enum ReviewStatus {
 |---|---|
 | `init` | Todo lo de Fase 1 |
 | `usuarios` (2c) | `User`, `LoginToken`, enum `OwnerPlan`, `Inquiry.userId` |
-| `add_owner` (2d) y `add_posts` | `Property.ownerId`, `Post` |
+| `propietarios` (2d) | `Property.ownerId`, `submittedAt`, `needsReview` |
+| `disponibilidad` (2d) | `PropertyRate.isAvailable`, `PropertyRate.dailyAmount`, `Property.availabilityUpdatedAt` |
+| `add_posts` | `Post` |
 | `add_availability_and_bookings` | `AvailabilityBlock`, `Booking` (sin campos de pago) |
 | `add_payments_and_reviews` | Campos de seña en `Booking`, `Review` |
 

@@ -90,6 +90,15 @@
 - Se revisa: fotos reales y suficientes, precio coherente, datos de contacto fuera de la descripción, ubicación dentro de las zonas.
 - Aprobar publica y avisa por mail. Rechazar exige motivo y avisa por mail.
 
+## Disponibilidad por períodos (temporada) — Fase 2
+
+- En alquiler temporario, el propietario carga **períodos** (mes completo, 1ra y 2da quincena, o los que quiera) con entrada, salida, precio del período, valor por día opcional y estado: **disponible** o **alquilado**.
+- "Salida" es el día que se deja la casa: la 1ra quincena (1 → 16) y la 2da (16 → 1) no se pisan.
+- Un período disponible que se pisa con uno alquilado se muestra **no disponible** (si alquilan la 1ra de enero, "Enero completo" ya no se puede).
+- La ficha muestra solo los períodos que todavía no terminaron, con "Disponibilidad actualizada el …" (la última vez que cambió algún estado o fecha).
+- Tocar un período disponible abre la consulta con esas fechas. Si en la consulta eligen fechas alquiladas, se avisa pero se puede enviar igual.
+- El propietario cambia el estado desde el asistente o con el acceso rápido "Disponibilidad" en Mis propiedades.
+
 ## Disponibilidad y reservas (Fase 3)
 
 - El calendario aplica solo a **alquiler temporario**.

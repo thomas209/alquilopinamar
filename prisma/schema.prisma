@@ -90,6 +90,13 @@ model Property {
   // Contacto: si es null se usa el WhatsApp del sitio
   contactWhatsapp String?
 
+  // Propietario (Fase 2d). null = la cargo el admin (es del sitio).
+  ownerId     String?
+  owner       User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  submittedAt DateTime? // ultima vez que el propietario la mando a revision (cola de moderacion)
+  needsReview Boolean   @default(false) // publicada con cambios de titulo, descripcion o fotos sin revisar
+  availabilityUpdatedAt DateTime? // ultima vez que cambio la disponibilidad (se muestra en la ficha)
+
   // Destacados (preparado para monetizar; hoy lo maneja el admin)
   isFeatured    Boolean   @default(false)
   featuredUntil DateTime?
@@ -111,6 +118,7 @@ model Property {
   @@index([status, operation, zoneId, type])
   @@index([status, operation, currency, price])
   @@index([status, isFeatured, featuredOrder])
+  @@index([ownerId, status])
 }
 
 model PropertyImage {
@@ -161,6 +169,10 @@ model PropertyRate {
   endDate    DateTime?   @db.Date // exclusivo
   minNights  Int?
   sortOrder  Int         @default(0)
+  // Disponibilidad por periodo (temporada): el propietario lo marca como alquilado.
+  // Un periodo que se pisa con uno alquilado tambien se muestra no disponible.
+  isAvailable Boolean  @default(true)
+  dailyAmount Decimal? @db.Decimal(14, 2) // valor por dia, opcional
 
   @@index([propertyId, startDate, endDate])
 }
@@ -213,7 +225,8 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  inquiries Inquiry[]
+  inquiries  Inquiry[]
+  properties Property[]
 }
 
 // Links magicos pedidos. Se guarda el hash del token, nunca el token.

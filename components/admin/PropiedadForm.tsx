@@ -10,6 +10,7 @@ import Rotulo from "@/components/ui/Rotulo";
 import Segmentado from "@/components/ui/Segmentado";
 import FotosPropiedad, { type FotoAdmin } from "@/components/admin/FotosPropiedad";
 import { MapaElegir } from "@/components/mapa";
+import EditorPeriodos from "@/components/panel/EditorPeriodos";
 import { CENTRO_PARTIDO, CENTRO_ZONA } from "@/lib/mapa-datos";
 import {
   ESTADOS,
@@ -19,58 +20,13 @@ import {
   PERIODOS_POR_OPERACION,
   TIPOS,
   type Estado,
-  type MonedaPrecio,
   type Operacion,
-  type PeriodoPrecio,
-  type Tipo,
 } from "@/lib/etiquetas";
 import { formatearCodigo } from "@/lib/formato";
 import { pedir } from "@/lib/pedir";
+import { VALORES_VACIOS, type ValoresPropiedad } from "@/lib/valores-propiedad";
 
-type Tarifa = {
-  label: string;
-  period: PeriodoPrecio;
-  amount: string;
-  currency: MonedaPrecio;
-  startDate: string;
-  endDate: string;
-};
-
-export type ValoresPropiedad = {
-  title: string;
-  description: string;
-  operation: Operacion;
-  type: Tipo;
-  zoneId: string;
-  address: string;
-  lat: string;
-  lng: string;
-  showExactLocation: boolean;
-  distanceToSeaM: string;
-  rooms: string;
-  bedrooms: string;
-  bathrooms: string;
-  garages: string;
-  maxGuests: string;
-  coveredM2: string;
-  lotM2: string;
-  hasPool: boolean;
-  petsAllowed: boolean;
-  price: string;
-  currency: MonedaPrecio;
-  pricePeriod: PeriodoPrecio;
-  priceOnRequest: boolean;
-  expenses: string;
-  houseRules: string;
-  checkInTime: string;
-  checkOutTime: string;
-  minNights: string;
-  contactWhatsapp: string;
-  isFeatured: boolean;
-  featuredOrder: string;
-  amenityIds: string[];
-  rates: Tarifa[];
-};
+export type { ValoresPropiedad };
 
 type Existente = {
   id: string;
@@ -82,42 +38,9 @@ type Existente = {
   minimoFotos: number;
   falta: string[];
   valores: ValoresPropiedad;
-};
-
-const VACIA: ValoresPropiedad = {
-  title: "",
-  description: "",
-  operation: "ALQUILER_TEMPORARIO",
-  type: "CASA",
-  zoneId: "",
-  address: "",
-  lat: "",
-  lng: "",
-  showExactLocation: false,
-  distanceToSeaM: "",
-  rooms: "",
-  bedrooms: "",
-  bathrooms: "",
-  garages: "",
-  maxGuests: "",
-  coveredM2: "",
-  lotM2: "",
-  hasPool: false,
-  petsAllowed: false,
-  price: "",
-  currency: "USD",
-  pricePeriod: "NOCHE",
-  priceOnRequest: false,
-  expenses: "",
-  houseRules: "",
-  checkInTime: "",
-  checkOutTime: "",
-  minNights: "",
-  contactWhatsapp: "",
-  isFeatured: false,
-  featuredOrder: "",
-  amenityIds: [],
-  rates: [],
+  // Si la publico un propietario desde el panel
+  propietario?: { nombre: string; email: string; telefono: string | null } | null;
+  needsReview?: boolean;
 };
 
 function Bloque({ titulo, ayuda, children }: { titulo: string; ayuda?: string; children: React.ReactNode }) {
@@ -150,7 +73,7 @@ export default function PropiedadForm({
   propiedad: Existente | null;
 }) {
   const router = useRouter();
-  const [v, setV] = useState<ValoresPropiedad>(propiedad?.valores ?? { ...VACIA, zoneId: zonas[0]?.id ?? "" });
+  const [v, setV] = useState<ValoresPropiedad>(propiedad?.valores ?? { ...VALORES_VACIOS, zoneId: zonas[0]?.id ?? "" });
   const punto = v.lat !== "" && v.lng !== "" && Number.isFinite(Number(v.lat)) && Number.isFinite(Number(v.lng)) ? { lat: Number(v.lat), lng: Number(v.lng) } : null;
   const centroMapa = CENTRO_ZONA[zonas.find((z) => z.id === v.zoneId)?.slug ?? ""] ?? CENTRO_PARTIDO;
   const [error, setError] = useState("");
@@ -191,8 +114,6 @@ export default function PropiedadForm({
     }));
   }
 
-  const setTarifa = (i: number, cambios: Partial<Tarifa>) =>
-    set("rates", v.rates.map((t, j) => (j === i ? { ...t, ...cambios } : t)));
 
   // Guarda los datos. Devuelve el id de la propiedad, o null si fallo.
   async function guardar(): Promise<string | null> {
@@ -269,7 +190,27 @@ export default function PropiedadForm({
           {propiedad ? formatearCodigo(propiedad.code) : "Nueva propiedad"}
         </h1>
         {estado && <PastillaEstado tono={estado.tono}>{estado.etiqueta}</PastillaEstado>}
+        {propiedad?.needsReview && <PastillaEstado tono="error">Cambios sin revisar</PastillaEstado>}
       </div>
+      {propiedad?.propietario && (
+        <div className="mb-8 rounded-[22px] bg-gris-50 p-4 text-[14px]">
+          <Rotulo como="p">Publicada por un propietario</Rotulo>
+          <p className="mt-2">
+            {propiedad.propietario.nombre || "Sin nombre"} ·{" "}
+            <a href={"mailto:" + propiedad.propietario.email} className="text-link">
+              {propiedad.propietario.email}
+            </a>
+            {propiedad.propietario.telefono ? " · " + propiedad.propietario.telefono : ""}
+          </p>
+          <p className="mt-1 text-texto-2">
+            {propiedad.status === "EN_REVISION"
+              ? "Está esperando revisión: si está todo bien, tocá “Guardar y publicar”."
+              : propiedad.needsReview
+                ? "Cambió título, descripción o fotos después de publicarla. Revisalos y tocá “Guardar y marcar revisada”."
+                : "Los cambios que hagas acá también los ve el propietario."}
+          </p>
+        </div>
+      )}
 
       <Bloque titulo="Qué es">
         <div className="flex flex-col gap-4">
@@ -410,39 +351,8 @@ export default function PropiedadForm({
       </Bloque>
 
       {esTemporario && (
-        <Bloque titulo="Tarifas por período" ayuda="Opcional. Se muestran como tabla en la ficha: quincenas de enero, temporada baja, fines de semana largos, etc.">
-          <div className="flex flex-col gap-4">
-            {v.rates.map((t, i) => (
-              <div key={i} className="rounded-[22px] bg-gris-50 p-4">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Campo className="md:col-span-2" etiqueta="Nombre" value={t.label} onChange={(e) => setTarifa(i, { label: e.target.value })} maxLength={80} placeholder="Enero · 1ra quincena" />
-                  <Campo etiqueta="Precio" value={t.amount} onChange={(e) => setTarifa(i, { amount: e.target.value })} type="number" min={0} step="any" />
-                  <CampoSelect etiqueta="Período" value={t.period} onChange={(e) => setTarifa(i, { period: e.target.value as PeriodoPrecio })}>
-                    {periodos.map((p) => (
-                      <option key={p.valor} value={p.valor}>
-                        {p.etiqueta}
-                      </option>
-                    ))}
-                  </CampoSelect>
-                  <Campo etiqueta="Desde (opcional)" value={t.startDate} onChange={(e) => setTarifa(i, { startDate: e.target.value })} type="date" />
-                  <Campo etiqueta="Hasta (opcional)" value={t.endDate} onChange={(e) => setTarifa(i, { endDate: e.target.value })} type="date" />
-                </div>
-                <Boton variante="texto" className="mt-2 text-error" onClick={() => set("rates", v.rates.filter((_, j) => j !== i))}>
-                  Quitar tarifa
-                </Boton>
-              </div>
-            ))}
-            <div>
-              <Boton
-                variante="secundario"
-                tamano="chico"
-                disabled={v.rates.length >= 30}
-                onClick={() => set("rates", [...v.rates, { label: "", period: v.pricePeriod, amount: "", currency: v.currency, startDate: "", endDate: "" }])}
-              >
-                Agregar tarifa
-              </Boton>
-            </div>
-          </div>
+        <Bloque titulo="Temporada: precios y disponibilidad" ayuda="Opcional. Períodos (mes, quincenas) con su precio; marcá los alquilados. En la ficha se ven como tarjetas con “Disponible” o “Alquilado”.">
+          <EditorPeriodos periodos={v.rates} onChange={(rates) => set("rates", rates)} opciones={periodos} moneda={v.currency} periodoPorDefecto={v.pricePeriod} />
         </Bloque>
       )}
 
@@ -507,9 +417,9 @@ export default function PropiedadForm({
             </div>
           )}
           <div className="flex flex-wrap items-center gap-2">
-            {propiedad.status !== "PUBLICADA" && (
+            {(propiedad.status !== "PUBLICADA" || propiedad.needsReview) && (
               <Boton tamano="chico" disabled={ocupado} onClick={() => cambiarEstado("PUBLICADA")}>
-                Guardar y publicar
+                {propiedad.status === "PUBLICADA" ? "Guardar y marcar revisada" : "Guardar y publicar"}
               </Boton>
             )}
             {propiedad.status === "PUBLICADA" && (

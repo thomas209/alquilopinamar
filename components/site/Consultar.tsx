@@ -8,6 +8,7 @@ import Rotulo from "@/components/ui/Rotulo";
 import { pedir } from "@/lib/pedir";
 import type { Operacion } from "@/lib/etiquetas";
 import { useSesion } from "@/store/usuario";
+import { pisaAlquilado } from "@/lib/disponibilidad";
 
 export type PropiedadConsulta = {
   slug: string;
@@ -16,6 +17,7 @@ export type PropiedadConsulta = {
   operation: Operacion;
   maxGuests: number | null;
   minNights: number | null;
+  alquilados?: { desde: string; hasta: string }[]; // periodos alquilados: se avisa si eligen esas fechas
 };
 
 const MENSAJES: Record<Operacion, string> = {
@@ -131,12 +133,26 @@ export default function Consultar({ propiedad, whatsapp, variante }: { propiedad
 
 type Errores = Partial<Record<"name" | "email" | "phone" | "message" | "checkIn" | "checkOut", string>>;
 
-function HojaConsulta({ propiedad, whatsapp, onCerrar, onWhatsapp }: { propiedad: PropiedadConsulta; whatsapp: string | null; onCerrar: () => void; onWhatsapp: () => void }) {
+// Hoja con el formulario. "fechas" la abre con un periodo ya elegido (desde "Disponibilidad y precios").
+export function HojaConsulta({
+  propiedad,
+  whatsapp,
+  onCerrar,
+  onWhatsapp,
+  fechas,
+}: {
+  propiedad: PropiedadConsulta;
+  whatsapp: string | null;
+  onCerrar: () => void;
+  onWhatsapp: () => void;
+  fechas?: { desde: string; hasta: string; periodo?: string };
+}) {
   const idForm = useId();
   const temporario = propiedad.operation === "ALQUILER_TEMPORARIO";
   const [contacto] = useState(contactoInicial);
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
+  const [checkIn, setCheckIn] = useState(fechas?.desde ?? "");
+  const [checkOut, setCheckOut] = useState(fechas?.hasta ?? "");
+  const fechasAlquiladas = Boolean(checkIn && checkOut && checkOut > checkIn && pisaAlquilado(checkIn, checkOut, propiedad.alquilados ?? []));
   const [errores, setErrores] = useState<Errores>({});
   const [errorGeneral, setErrorGeneral] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -259,6 +275,11 @@ function HojaConsulta({ propiedad, whatsapp, onCerrar, onWhatsapp }: { propiedad
               error={errores.checkIn}
             />
             <Campo etiqueta="Salida" type="date" name="checkOut" min={checkIn ? masDias(checkIn, 1) : hoyIso()} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} error={errores.checkOut} />
+            {fechasAlquiladas && (
+              <p role="status" className="col-span-2 -mt-1 rounded-campo bg-gris-50 px-4 py-3 text-[14px] leading-relaxed">
+                Esas fechas figuran como alquiladas. Podés elegir otras o consultar igual por si se libera.
+              </p>
+            )}
             <Campo
               etiqueta="Huéspedes"
               type="number"
@@ -275,7 +296,7 @@ function HojaConsulta({ propiedad, whatsapp, onCerrar, onWhatsapp }: { propiedad
         <Campo etiqueta="Nombre" name="name" autoComplete="name" defaultValue={contacto?.name} required maxLength={80} error={errores.name} />
         <Campo etiqueta="Mail" name="email" type="email" autoComplete="email" inputMode="email" defaultValue={contacto?.email} required maxLength={120} error={errores.email} />
         <Campo etiqueta="Teléfono (opcional)" name="phone" type="tel" autoComplete="tel" inputMode="tel" defaultValue={contacto?.phone} maxLength={30} ayuda="Con WhatsApp, si querés que te escriban por ahí." error={errores.phone} />
-        <CampoArea etiqueta="Mensaje" name="message" rows={4} defaultValue={MENSAJES[propiedad.operation]} required maxLength={2000} error={errores.message} />
+        <CampoArea etiqueta="Mensaje" name="message" rows={4} defaultValue={fechas?.periodo ? "Hola, me interesa el período “" + fechas.periodo + "”. ¿Sigue disponible? ¡Gracias!" : MENSAJES[propiedad.operation]} required maxLength={2000} error={errores.message} />
 
         {/* Campo trampa para robots: invisible para las personas */}
         <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">

@@ -9,6 +9,8 @@ export type TarifaForm = {
   currency: MonedaPrecio;
   startDate: string;
   endDate: string;
+  isAvailable: boolean;
+  dailyAmount: string;
 };
 
 export type ValoresPropiedad = {
@@ -120,7 +122,16 @@ type DesdeBase = {
   isFeatured: boolean;
   featuredOrder: number | null;
   amenities: { amenityId: string }[];
-  rates: { label: string; period: PeriodoPrecio; amount: { toString(): string }; currency: MonedaPrecio; startDate: Date | null; endDate: Date | null }[];
+  rates: {
+    label: string;
+    period: PeriodoPrecio;
+    amount: { toString(): string };
+    currency: MonedaPrecio;
+    startDate: Date | null;
+    endDate: Date | null;
+    isAvailable: boolean;
+    dailyAmount: { toString(): string } | null;
+  }[];
 };
 
 // Propiedad de la base (con amenities y tarifas) → valores del formulario.
@@ -165,6 +176,8 @@ export function valoresDesdeBase(p: DesdeBase): ValoresPropiedad {
       currency: t.currency,
       startDate: dia(t.startDate),
       endDate: dia(t.endDate),
+      isAvailable: t.isAvailable,
+      dailyAmount: dec(t.dailyAmount),
     })),
   };
 }

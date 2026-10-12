@@ -185,6 +185,7 @@ El proxy corta con `401` si no hay cookie válida. Cada endpoint vuelve a leer e
 | `PATCH /api/panel/propiedades/[id]` | Guarda (mismo cuerpo que el admin). Ignora `isFeatured` y `featuredOrder`. Rechazada → borrador. Publicada: no puede quedar incompleta; si cambia título o descripción queda `needsReview` |
 | `DELETE /api/panel/propiedades/[id]` | Baja lógica |
 | `POST /api/panel/propiedades/[id]/estado` | `{ "accion": "enviar" \| "retirar" \| "pausar" \| "reanudar" }`. `enviar` pide la propiedad completa y nombre + teléfono/WhatsApp en la cuenta; `reanudar` solo si ya fue aprobada |
+| `PATCH /api/panel/propiedades/[id]/disponibilidad` | `{ "rateId", "isAvailable" }`: acceso rápido para marcar un período alquilado o disponible |
 | `POST /api/panel/propiedades/[id]/fotos/firma` | Igual que el del admin |
 | `POST · PATCH /api/panel/propiedades/[id]/fotos` | Registrar foto · ordenar. Si está publicada, queda `needsReview` |
 | `DELETE /api/panel/propiedades/[id]/fotos/[fotoId]` | Borrar foto. Si está publicada, queda `needsReview` |

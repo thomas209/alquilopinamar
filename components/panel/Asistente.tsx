@@ -11,13 +11,14 @@ import { PastillaFiltro } from "@/components/ui/Pastilla";
 import Rotulo from "@/components/ui/Rotulo";
 import Segmentado from "@/components/ui/Segmentado";
 import { cn } from "@/lib/cn";
-import { MONEDAS, OPERACIONES, PERIODOS, PERIODOS_POR_OPERACION, TIPOS, type Estado, type Operacion, type PeriodoPrecio } from "@/lib/etiquetas";
+import { MONEDAS, OPERACIONES, PERIODOS, PERIODOS_POR_OPERACION, TIPOS, type Estado, type Operacion } from "@/lib/etiquetas";
 import { formatearCodigo } from "@/lib/formato";
 import { miniatura } from "@/lib/foto";
 import { CENTRO_PARTIDO, CENTRO_ZONA } from "@/lib/mapa-datos";
 import { pedir } from "@/lib/pedir";
 import { faltaParaPublicar, MIN_DESCRIPCION, minimoDeFotos } from "@/lib/requisitos";
-import type { TarifaForm, ValoresPropiedad } from "@/lib/valores-propiedad";
+import type { ValoresPropiedad } from "@/lib/valores-propiedad";
+import EditorPeriodos from "@/components/panel/EditorPeriodos";
 
 const API = "/api/panel/propiedades/";
 
@@ -111,7 +112,6 @@ export default function Asistente({
     setV((x) => ({ ...x, [campo]: valor }));
   };
   const texto = (campo: keyof ValoresPropiedad) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => set(campo, e.target.value as never);
-  const setTarifa = (i: number, cambios: Partial<TarifaForm>) => set("rates", v.rates.map((t, j) => (j === i ? { ...t, ...cambios } : t)));
   const alCambiarFotos = useCallback((lista: FotoAdmin[]) => setImagenes(lista), []);
 
   function cambiarOperacion(operation: Operacion) {
@@ -412,40 +412,11 @@ export default function Asistente({
 
             {esTemporario && (
               <section>
-                <Rotulo como="p">Tarifas por período (opcional)</Rotulo>
-                <p className="mt-2 text-[14px] text-texto-2">Quincenas de enero, temporada baja, fines de semana largos… Se muestran como tabla en la publicación.</p>
-                <div className="mt-4 flex flex-col gap-4">
-                  {v.rates.map((t, i) => (
-                    <div key={i} className="rounded-card bg-gris-50 p-4">
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <Campo className="md:col-span-2" etiqueta="Nombre" value={t.label} onChange={(e) => setTarifa(i, { label: e.target.value })} maxLength={80} placeholder="Enero · 1ra quincena" />
-                        <Campo etiqueta="Precio" value={t.amount} onChange={(e) => setTarifa(i, { amount: e.target.value })} type="number" inputMode="decimal" min={0} step="any" />
-                        <CampoSelect etiqueta="Por" value={t.period} onChange={(e) => setTarifa(i, { period: e.target.value as PeriodoPrecio })}>
-                          {periodos.map((p) => (
-                            <option key={p.valor} value={p.valor}>
-                              {p.etiqueta}
-                            </option>
-                          ))}
-                        </CampoSelect>
-                        <Campo etiqueta="Desde (opcional)" value={t.startDate} onChange={(e) => setTarifa(i, { startDate: e.target.value })} type="date" />
-                        <Campo etiqueta="Hasta (opcional)" value={t.endDate} onChange={(e) => setTarifa(i, { endDate: e.target.value })} type="date" />
-                      </div>
-                      <Boton variante="texto" className="mt-2 !text-error" onClick={() => set("rates", v.rates.filter((_, j) => j !== i))}>
-                        Quitar tarifa
-                      </Boton>
-                    </div>
-                  ))}
-                  <div>
-                    <Boton
-                      variante="secundario"
-                      tamano="chico"
-                      disabled={v.rates.length >= 30}
-                      onClick={() => set("rates", [...v.rates, { label: "", period: v.pricePeriod, amount: "", currency: v.currency, startDate: "", endDate: "" }])}
-                    >
-                      Agregar tarifa
-                    </Boton>
-                  </div>
-                </div>
+                <Rotulo como="p">Temporada: precios y disponibilidad</Rotulo>
+                <p className="mt-2 mb-5 max-w-[60ch] text-[14px] leading-relaxed text-texto-2">
+                  Cargá los períodos que alquilás (mes, quincenas) con su precio, y marcá los que ya están alquilados. En la publicación se ven como tarjetas con “Disponible” o “Alquilado”.
+                </p>
+                <EditorPeriodos periodos={v.rates} onChange={(rates) => set("rates", rates)} opciones={periodos} moneda={v.currency} periodoPorDefecto={v.pricePeriod} />
               </section>
             )}
           </div>

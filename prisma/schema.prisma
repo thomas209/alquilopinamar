@@ -95,6 +95,7 @@ model Property {
   owner       User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   submittedAt DateTime? // ultima vez que el propietario la mando a revision (cola de moderacion)
   needsReview Boolean   @default(false) // publicada con cambios de titulo, descripcion o fotos sin revisar
+  availabilityUpdatedAt DateTime? // ultima vez que cambio la disponibilidad (se muestra en la ficha)
 
   // Destacados (preparado para monetizar; hoy lo maneja el admin)
   isFeatured    Boolean   @default(false)
@@ -168,6 +169,10 @@ model PropertyRate {
   endDate    DateTime?   @db.Date // exclusivo
   minNights  Int?
   sortOrder  Int         @default(0)
+  // Disponibilidad por periodo (temporada): el propietario lo marca como alquilado.
+  // Un periodo que se pisa con uno alquilado tambien se muestra no disponible.
+  isAvailable Boolean  @default(true)
+  dailyAmount Decimal? @db.Decimal(14, 2) // valor por dia, opcional
 
   @@index([propertyId, startDate, endDate])
 }

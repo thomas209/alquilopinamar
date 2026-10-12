@@ -10,6 +10,7 @@ import Rotulo from "@/components/ui/Rotulo";
 import Segmentado from "@/components/ui/Segmentado";
 import FotosPropiedad, { type FotoAdmin } from "@/components/admin/FotosPropiedad";
 import { MapaElegir } from "@/components/mapa";
+import EditorPeriodos from "@/components/panel/EditorPeriodos";
 import { CENTRO_PARTIDO, CENTRO_ZONA } from "@/lib/mapa-datos";
 import {
   ESTADOS,
@@ -20,13 +21,11 @@ import {
   TIPOS,
   type Estado,
   type Operacion,
-  type PeriodoPrecio,
 } from "@/lib/etiquetas";
 import { formatearCodigo } from "@/lib/formato";
 import { pedir } from "@/lib/pedir";
-import { VALORES_VACIOS, type TarifaForm, type ValoresPropiedad } from "@/lib/valores-propiedad";
+import { VALORES_VACIOS, type ValoresPropiedad } from "@/lib/valores-propiedad";
 
-type Tarifa = TarifaForm;
 export type { ValoresPropiedad };
 
 type Existente = {
@@ -115,8 +114,6 @@ export default function PropiedadForm({
     }));
   }
 
-  const setTarifa = (i: number, cambios: Partial<Tarifa>) =>
-    set("rates", v.rates.map((t, j) => (j === i ? { ...t, ...cambios } : t)));
 
   // Guarda los datos. Devuelve el id de la propiedad, o null si fallo.
   async function guardar(): Promise<string | null> {
@@ -354,39 +351,8 @@ export default function PropiedadForm({
       </Bloque>
 
       {esTemporario && (
-        <Bloque titulo="Tarifas por período" ayuda="Opcional. Se muestran como tabla en la ficha: quincenas de enero, temporada baja, fines de semana largos, etc.">
-          <div className="flex flex-col gap-4">
-            {v.rates.map((t, i) => (
-              <div key={i} className="rounded-[22px] bg-gris-50 p-4">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <Campo className="md:col-span-2" etiqueta="Nombre" value={t.label} onChange={(e) => setTarifa(i, { label: e.target.value })} maxLength={80} placeholder="Enero · 1ra quincena" />
-                  <Campo etiqueta="Precio" value={t.amount} onChange={(e) => setTarifa(i, { amount: e.target.value })} type="number" min={0} step="any" />
-                  <CampoSelect etiqueta="Período" value={t.period} onChange={(e) => setTarifa(i, { period: e.target.value as PeriodoPrecio })}>
-                    {periodos.map((p) => (
-                      <option key={p.valor} value={p.valor}>
-                        {p.etiqueta}
-                      </option>
-                    ))}
-                  </CampoSelect>
-                  <Campo etiqueta="Desde (opcional)" value={t.startDate} onChange={(e) => setTarifa(i, { startDate: e.target.value })} type="date" />
-                  <Campo etiqueta="Hasta (opcional)" value={t.endDate} onChange={(e) => setTarifa(i, { endDate: e.target.value })} type="date" />
-                </div>
-                <Boton variante="texto" className="mt-2 text-error" onClick={() => set("rates", v.rates.filter((_, j) => j !== i))}>
-                  Quitar tarifa
-                </Boton>
-              </div>
-            ))}
-            <div>
-              <Boton
-                variante="secundario"
-                tamano="chico"
-                disabled={v.rates.length >= 30}
-                onClick={() => set("rates", [...v.rates, { label: "", period: v.pricePeriod, amount: "", currency: v.currency, startDate: "", endDate: "" }])}
-              >
-                Agregar tarifa
-              </Boton>
-            </div>
-          </div>
+        <Bloque titulo="Temporada: precios y disponibilidad" ayuda="Opcional. Períodos (mes, quincenas) con su precio; marcá los alquilados. En la ficha se ven como tarjetas con “Disponible” o “Alquilado”.">
+          <EditorPeriodos periodos={v.rates} onChange={(rates) => set("rates", rates)} opciones={periodos} moneda={v.currency} periodoPorDefecto={v.pricePeriod} />
         </Bloque>
       )}
 

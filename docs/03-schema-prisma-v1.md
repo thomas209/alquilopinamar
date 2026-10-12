@@ -479,6 +479,7 @@ enum ReviewStatus {
 | `init` | Todo lo de Fase 1 |
 | `usuarios` (2c) | `User`, `LoginToken`, enum `OwnerPlan`, `Inquiry.userId` |
 | `propietarios` (2d) | `Property.ownerId`, `submittedAt`, `needsReview` |
+| `disponibilidad` (2d) | `PropertyRate.isAvailable`, `PropertyRate.dailyAmount`, `Property.availabilityUpdatedAt` |
 | `add_posts` | `Post` |
 | `add_availability_and_bookings` | `AvailabilityBlock`, `Booking` (sin campos de pago) |
 | `add_payments_and_reviews` | Campos de seña en `Booking`, `Review` |

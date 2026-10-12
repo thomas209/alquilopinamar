@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import DisponibilidadRapida from "@/components/panel/DisponibilidadRapida";
 import Foto from "@/components/site/Foto";
 import Boton from "@/components/ui/Boton";
 import { PastillaEstado } from "@/components/ui/Pastilla";
@@ -39,8 +40,10 @@ export default async function MisPropiedadesPage() {
       needsReview: true,
       zone: { select: { name: true } },
       images: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true } },
+      rates: { orderBy: { sortOrder: "asc" }, select: { id: true, label: true, startDate: true, endDate: true, isAvailable: true } },
     },
   });
+  const dia = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 pt-8 pb-16 md:px-12 md:pt-12">
@@ -101,6 +104,9 @@ export default async function MisPropiedadesPage() {
                   <Link href={"/panel/propiedades/" + p.id} className="text-[15px] font-medium text-link hover:opacity-70">
                     {p.status === "BORRADOR" ? "Continuar" : "Editar"}
                   </Link>
+                  {p.operation === "ALQUILER_TEMPORARIO" && p.rates.length > 0 && (
+                    <DisponibilidadRapida propiedadId={p.id} titulo={p.title} periodos={p.rates.map((t) => ({ ...t, startDate: dia(t.startDate), endDate: dia(t.endDate) }))} />
+                  )}
                   {p.status === "PUBLICADA" && (
                     <Link href={"/propiedad/" + p.slug} className="text-[15px] font-medium text-link hover:opacity-70">
                       Ver publicación

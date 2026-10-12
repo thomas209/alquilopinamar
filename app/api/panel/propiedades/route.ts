@@ -29,6 +29,7 @@ export async function POST(request: Request) {
           status: "BORRADOR",
           ownerId: yo.id,
           slug: "tmp-" + randomUUID(),
+          availabilityUpdatedAt: r.tarifas.length ? new Date() : null,
           amenities: { create: amenities.map((a) => ({ amenityId: a.id })) },
           rates: { create: r.tarifas.map((t, i) => ({ ...t, sortOrder: i })) },
         },

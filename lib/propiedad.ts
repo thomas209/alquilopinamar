@@ -44,6 +44,8 @@ export type TarifaValida = {
   startDate: Date | null;
   endDate: Date | null;
   minNights: number | null;
+  isAvailable: boolean;
+  dailyAmount: number | null;
 };
 
 // Valida y ordena lo que llega del formulario de propiedad (alta y edicion).
@@ -85,8 +87,9 @@ export function datosDePropiedad(body: Record<string, unknown>) {
     const startDate = fecha(t.startDate);
     const endDate = fecha(t.endDate);
     if (startDate && endDate && endDate <= startDate) {
-      return mal("En la tarifa “" + label + "” la fecha de fin tiene que ser posterior a la de inicio.");
+      return mal("En “" + label + "” la salida tiene que ser después de la entrada.");
     }
+    if (Boolean(startDate) !== Boolean(endDate)) return mal("En “" + label + "” completá las dos fechas, o dejalas vacías.");
     tarifas.push({
       label,
       amount,
@@ -95,6 +98,8 @@ export function datosDePropiedad(body: Record<string, unknown>) {
       startDate,
       endDate,
       minNights: enteroONull(t.minNights, 365),
+      isAvailable: t.isAvailable !== false,
+      dailyAmount: numero(t.dailyAmount),
     });
   }
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { exigirAdmin } from "@/lib/auth";
 import { refrescarSitio } from "@/lib/cache";
 import { errorJson, leerJson } from "@/lib/api";
+import { huellaDisponibilidad } from "@/lib/disponibilidad";
 import { armarSlug, datosDePropiedad, faltaParaPublicar, mensajeFalta } from "@/lib/propiedad";
 
 type Contexto = { params: Promise<{ id: string }> };
@@ -32,6 +33,8 @@ export async function PATCH(request: Request, { params }: Contexto) {
   }
 
   const amenities = await prisma.amenity.findMany({ where: { id: { in: r.amenityIds } }, select: { id: true } });
+  const antes = await prisma.propertyRate.findMany({ where: { propertyId: id }, orderBy: { sortOrder: "asc" }, select: { label: true, startDate: true, endDate: true, isAvailable: true } });
+  const cambioDisponibilidad = huellaDisponibilidad(antes) !== huellaDisponibilidad(r.tarifas);
 
   try {
     const propiedad = await prisma.$transaction(async (tx) => {
@@ -43,6 +46,7 @@ export async function PATCH(request: Request, { params }: Contexto) {
           ...r.datos,
           // El link no cambia una vez que la propiedad se publico alguna vez
           ...(actual.publishedAt ? {} : { slug: armarSlug(r.datos.title, actual.code) }),
+          ...(cambioDisponibilidad ? { availabilityUpdatedAt: new Date() } : {}),
           amenities: { create: amenities.map((a) => ({ amenityId: a.id })) },
           rates: { create: r.tarifas.map((t, i) => ({ ...t, sortOrder: i })) },
         },

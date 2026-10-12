@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Consultar, { ContarVista, type PropiedadConsulta } from "@/components/site/Consultar";
+import DisponibilidadPrecios from "@/components/site/DisponibilidadPrecios";
+import { hoyArgentina, periodosVigentes, rangosAlquilados } from "@/lib/disponibilidad";
 import Galeria from "@/components/site/Galeria";
 import { MapaVer } from "@/components/mapa";
 import PropiedadCard from "@/components/site/PropiedadCard";
@@ -86,7 +88,17 @@ export default async function PropiedadPage({ params }: Props) {
     p.petsAllowed ? "Se aceptan mascotas" : "No se aceptan mascotas",
   ].filter((x): x is string => Boolean(x));
 
-  const consulta: PropiedadConsulta = { slug: p.slug, codigo, title: p.title, operation: p.operation, maxGuests: p.maxGuests, minNights: p.minNights };
+  // Periodos de temporada que todavia no terminaron, con su estado real
+  const periodos = periodosVigentes(p.tarifas, hoyArgentina());
+  const consulta: PropiedadConsulta = {
+    slug: p.slug,
+    codigo,
+    title: p.title,
+    operation: p.operation,
+    maxGuests: p.maxGuests,
+    minNights: p.minNights,
+    alquilados: rangosAlquilados(p.tarifas),
+  };
 
   return (
     <div className="mx-auto max-w-[1440px] pb-28 md:px-12 md:pt-6 md:pb-0">
@@ -167,22 +179,9 @@ export default async function PropiedadPage({ params }: Props) {
             </Seccion>
           )}
 
-          {p.tarifas.length > 0 && (
-            <Seccion titulo="Tarifas">
-              <ul className="max-w-[560px] divide-y divide-gris-200">
-                {p.tarifas.map((t) => (
-                  <li key={t.id} className="flex items-baseline justify-between gap-4 py-3">
-                    <span className="text-[15px]">
-                      {t.label}
-                      {t.minNights ? <span className="text-texto-2"> · mín. {t.minNights} noches</span> : null}
-                    </span>
-                    <span className="shrink-0 font-titulo text-[15px] font-medium tabular-nums">
-                      {formatearMonto(t.amount, t.currency)}
-                      {ETIQUETA_PERIODO[t.period] && <span className="font-sans text-[13px] font-normal text-texto-2"> / {ETIQUETA_PERIODO[t.period]}</span>}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+          {periodos.length > 0 && (
+            <Seccion titulo={periodos.some((t) => t.startDate) ? "Disponibilidad y precios" : "Tarifas"}>
+              <DisponibilidadPrecios periodos={periodos} actualizada={p.disponibilidadActualizada} propiedad={consulta} whatsapp={whatsapp} />
             </Seccion>
           )}
 

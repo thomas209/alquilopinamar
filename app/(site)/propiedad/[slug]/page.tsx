@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Consultar, { ContarVista, type PropiedadConsulta } from "@/components/site/Consultar";
-import DisponibilidadPrecios from "@/components/site/DisponibilidadPrecios";
-import { hoyArgentina, periodosVigentes, rangosAlquilados } from "@/lib/disponibilidad";
+import DisponibilidadPrecios, { ProximoDisponible } from "@/components/site/DisponibilidadPrecios";
+import { hoyArgentina } from "@/lib/disponibilidad";
 import Galeria from "@/components/site/Galeria";
 import { MapaVer } from "@/components/mapa";
 import PropiedadCard from "@/components/site/PropiedadCard";
@@ -88,8 +88,10 @@ export default async function PropiedadPage({ params }: Props) {
     p.petsAllowed ? "Se aceptan mascotas" : "No se aceptan mascotas",
   ].filter((x): x is string => Boolean(x));
 
-  // Periodos de temporada que todavia no terminaron, con su estado real
-  const periodos = periodosVigentes(p.tarifas, hoyArgentina());
+  // Periodos de temporada (con fechas ocupadas, para las noches sueltas)
+  const hoy = hoyArgentina();
+  const hayPeriodos = p.tarifas.some((t) => !t.endDate || t.endDate > hoy);
+  const temporario = p.operation === "ALQUILER_TEMPORARIO";
   const consulta: PropiedadConsulta = {
     slug: p.slug,
     codigo,
@@ -97,7 +99,7 @@ export default async function PropiedadPage({ params }: Props) {
     operation: p.operation,
     maxGuests: p.maxGuests,
     minNights: p.minNights,
-    alquilados: rangosAlquilados(p.tarifas),
+    ocupados: p.ocupados,
   };
 
   return (
@@ -179,9 +181,9 @@ export default async function PropiedadPage({ params }: Props) {
             </Seccion>
           )}
 
-          {periodos.length > 0 && (
-            <Seccion titulo={periodos.some((t) => t.startDate) ? "Disponibilidad y precios" : "Tarifas"}>
-              <DisponibilidadPrecios periodos={periodos} actualizada={p.disponibilidadActualizada} propiedad={consulta} whatsapp={whatsapp} />
+          {hayPeriodos && (
+            <Seccion titulo={p.tarifas.some((t) => t.startDate) ? "Disponibilidad y precios" : "Tarifas"}>
+              <DisponibilidadPrecios periodos={p.tarifas} ocupados={p.ocupados} hoy={hoy} actualizada={p.disponibilidadActualizada} propiedad={consulta} whatsapp={whatsapp} />
             </Seccion>
           )}
 
@@ -207,6 +209,7 @@ export default async function PropiedadPage({ params }: Props) {
             <p className="mt-1 text-[14px] text-texto-2">
               {etiquetaDe(OPERACIONES, p.operation)} · {p.zona.name}
             </p>
+            {temporario && <ProximoDisponible periodos={p.tarifas} ocupados={p.ocupados} hoy={hoy} propiedad={consulta} whatsapp={whatsapp} />}
             <div className="mt-5">
               <Consultar propiedad={consulta} whatsapp={whatsapp} variante="panel" />
             </div>

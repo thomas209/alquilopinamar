@@ -18,6 +18,7 @@ export default async function AdminPropiedadEditarPage({ params }: { params: Pro
       rates: { orderBy: { sortOrder: "asc" } },
       images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true } },
       owner: { select: { firstName: true, lastName: true, email: true, phone: true, whatsapp: true } },
+      blocks: { orderBy: { startDate: "asc" }, select: { startDate: true, endDate: true } },
     },
   });
   if (!p) notFound();
@@ -52,6 +53,7 @@ export default async function AdminPropiedadEditarPage({ params }: { params: Pro
         falta: faltaParaPublicar({ ...p, fotos: p.images.length }),
         valores: valoresDesdeBase(p),
         needsReview: p.needsReview,
+        ocupados: p.blocks.map((b) => ({ desde: b.startDate.toISOString().slice(0, 10), hasta: b.endDate.toISOString().slice(0, 10) })),
         propietario: p.owner
           ? { nombre: (p.owner.firstName + " " + p.owner.lastName).trim(), email: p.owner.email, telefono: p.owner.whatsapp || p.owner.phone }
           : null,

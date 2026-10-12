@@ -40,10 +40,11 @@ export default async function MisPropiedadesPage() {
       needsReview: true,
       zone: { select: { name: true } },
       images: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true } },
-      rates: { orderBy: { sortOrder: "asc" }, select: { id: true, label: true, startDate: true, endDate: true, isAvailable: true } },
+      rates: { orderBy: { sortOrder: "asc" }, select: { label: true, startDate: true, endDate: true } },
+      blocks: { orderBy: { startDate: "asc" }, select: { startDate: true, endDate: true } },
     },
   });
-  const dia = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
+  const dia = (d: Date) => d.toISOString().slice(0, 10);
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 pt-8 pb-16 md:px-12 md:pt-12">
@@ -104,8 +105,13 @@ export default async function MisPropiedadesPage() {
                   <Link href={"/panel/propiedades/" + p.id} className="text-[15px] font-medium text-link hover:opacity-70">
                     {p.status === "BORRADOR" ? "Continuar" : "Editar"}
                   </Link>
-                  {p.operation === "ALQUILER_TEMPORARIO" && p.rates.length > 0 && (
-                    <DisponibilidadRapida propiedadId={p.id} titulo={p.title} periodos={p.rates.map((t) => ({ ...t, startDate: dia(t.startDate), endDate: dia(t.endDate) }))} />
+                  {p.operation === "ALQUILER_TEMPORARIO" && (
+                    <DisponibilidadRapida
+                      propiedadId={p.id}
+                      titulo={p.title}
+                      ocupados={p.blocks.map((b) => ({ desde: dia(b.startDate), hasta: dia(b.endDate) }))}
+                      periodos={p.rates.flatMap((t) => (t.startDate && t.endDate ? [{ label: t.label, startDate: dia(t.startDate), endDate: dia(t.endDate) }] : []))}
+                    />
                   )}
                   {p.status === "PUBLICADA" && (
                     <Link href={"/propiedad/" + p.slug} className="text-[15px] font-medium text-link hover:opacity-70">

@@ -9,7 +9,6 @@ export type TarifaForm = {
   currency: MonedaPrecio;
   startDate: string;
   endDate: string;
-  isAvailable: boolean;
   dailyAmount: string;
 };
 
@@ -129,7 +128,6 @@ type DesdeBase = {
     currency: MonedaPrecio;
     startDate: Date | null;
     endDate: Date | null;
-    isAvailable: boolean;
     dailyAmount: { toString(): string } | null;
   }[];
 };
@@ -176,7 +174,6 @@ export function valoresDesdeBase(p: DesdeBase): ValoresPropiedad {
       currency: t.currency,
       startDate: dia(t.startDate),
       endDate: dia(t.endDate),
-      isAvailable: t.isAvailable,
       dailyAmount: dec(t.dailyAmount),
     })),
   };

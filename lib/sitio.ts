@@ -245,6 +245,8 @@ export const propiedadPorSlug = cache(async (slug: string) => {
       images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true, width: true, height: true } },
       amenities: { select: { amenity: { select: { id: true, slug: true, name: true, sortOrder: true } } } },
       rates: { orderBy: { sortOrder: "asc" } },
+      // Solo las fechas ocupadas que todavia no pasaron
+      blocks: { where: { endDate: { gt: new Date(Date.now() - 86_400_000) } }, orderBy: { startDate: "asc" }, select: { startDate: true, endDate: true } },
     },
   });
   if (!p) return null;
@@ -296,9 +298,9 @@ export const propiedadPorSlug = cache(async (slug: string) => {
       // Texto "AAAA-MM-DD" (la cache guarda JSON)
       startDate: t.startDate ? t.startDate.toISOString().slice(0, 10) : null,
       endDate: t.endDate ? t.endDate.toISOString().slice(0, 10) : null,
-      isAvailable: t.isAvailable,
       dailyAmount: t.dailyAmount === null ? null : Number(t.dailyAmount),
     })),
+    ocupados: p.blocks.map((b) => ({ desde: b.startDate.toISOString().slice(0, 10), hasta: b.endDate.toISOString().slice(0, 10) })),
     disponibilidadActualizada: p.availabilityUpdatedAt?.toISOString() ?? null,
   };
 }, "ficha");

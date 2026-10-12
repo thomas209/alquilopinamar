@@ -114,6 +114,7 @@ model Property {
   amenities PropertyAmenity[]
   rates     PropertyRate[]
   inquiries Inquiry[]
+  blocks    AvailabilityBlock[]
 
   @@index([status, operation, zoneId, type])
   @@index([status, operation, currency, price])
@@ -134,6 +135,19 @@ model PropertyImage {
   createdAt  DateTime @default(now())
 
   @@index([propertyId, sortOrder])
+}
+
+// Fechas ocupadas de una propiedad (alquiler temporario). Las marca el propietario
+// o el admin. "endDate" es el dia de salida: esa noche queda libre.
+model AvailabilityBlock {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  startDate  DateTime @db.Date
+  endDate    DateTime @db.Date
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId, startDate])
 }
 
 model Amenity {
@@ -169,8 +183,8 @@ model PropertyRate {
   endDate    DateTime?   @db.Date // exclusivo
   minNights  Int?
   sortOrder  Int         @default(0)
-  // Disponibilidad por periodo (temporada): el propietario lo marca como alquilado.
-  // Un periodo que se pisa con uno alquilado tambien se muestra no disponible.
+  // OBSOLETO desde la migracion "fechas_ocupadas": lo ocupado se marca por fechas
+  // (AvailabilityBlock). Queda en la base por las reglas (no se borran columnas).
   isAvailable Boolean  @default(true)
   dailyAmount Decimal? @db.Decimal(14, 2) // valor por dia, opcional
 

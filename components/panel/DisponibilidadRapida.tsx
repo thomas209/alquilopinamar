@@ -1,34 +1,34 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import CalendarioOcupado from "@/components/panel/CalendarioOcupado";
 import Boton from "@/components/ui/Boton";
 import Hoja from "@/components/ui/Hoja";
-import Segmentado from "@/components/ui/Segmentado";
-import { disponibleEfectivo, rangoCorto } from "@/lib/disponibilidad";
+import type { Rango } from "@/lib/disponibilidad";
 import { pedir } from "@/lib/pedir";
 
-type Periodo = { id: string; label: string; startDate: string | null; endDate: string | null; isAvailable: boolean };
+// Funcion para guardar las fechas ocupadas contra la API que corresponda
+export function guardarOcupadosEn(url: string) {
+  return async (rangos: Rango[]) => {
+    const r = await pedir<{ rangos: Rango[] }>(url, "PUT", { rangos });
+    return r.ok ? { ok: true as const, rangos: r.datos.rangos } : { ok: false as const, error: r.error };
+  };
+}
 
-// Desde "Mis propiedades": marcar alquilado o disponible con un toque.
-export default function DisponibilidadRapida({ propiedadId, titulo, periodos: iniciales }: { propiedadId: string; titulo: string; periodos: Periodo[] }) {
+// Desde "Mis propiedades": marcar fechas ocupadas sin entrar al asistente.
+export default function DisponibilidadRapida({
+  propiedadId,
+  titulo,
+  ocupados,
+  periodos,
+}: {
+  propiedadId: string;
+  titulo: string;
+  ocupados: Rango[];
+  periodos: { label: string; startDate: string; endDate: string }[];
+}) {
   const router = useRouter();
   const [abierta, setAbierta] = useState(false);
-  const [periodos, setPeriodos] = useState(iniciales);
-  const [guardando, setGuardando] = useState<string | null>(null);
-  const [error, setError] = useState("");
-
-  async function cambiar(p: Periodo, isAvailable: boolean) {
-    const anterior = periodos;
-    setPeriodos((lista) => lista.map((x) => (x.id === p.id ? { ...x, isAvailable } : x)));
-    setGuardando(p.id);
-    setError("");
-    const r = await pedir("/api/panel/propiedades/" + propiedadId + "/disponibilidad", "PATCH", { rateId: p.id, isAvailable });
-    setGuardando(null);
-    if (!r.ok) {
-      setPeriodos(anterior);
-      setError(r.error);
-    }
-  }
 
   function cerrar() {
     setAbierta(false);
@@ -51,36 +51,8 @@ export default function DisponibilidadRapida({ propiedadId, titulo, periodos: in
         }
       >
         <p className="truncate text-[15px] text-texto-2">{titulo}</p>
-        <p className="mt-1 text-[13px] text-texto-2">Cada cambio se guarda solo y se ve enseguida en la publicación.</p>
-        {error && (
-          <p role="alert" className="mt-4 text-[14px] text-error">
-            {error}
-          </p>
-        )}
-        <ul className="mt-5 divide-y divide-gris-200">
-          {periodos.map((p) => {
-            const pisado = p.isAvailable && !disponibleEfectivo(p, periodos);
-            return (
-              <li key={p.id} className="flex flex-col gap-3 py-4">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-[16px] font-medium">{p.label}</p>
-                  {p.startDate && p.endDate && <p className="shrink-0 text-[13px] text-texto-2 tabular-nums">{rangoCorto(p.startDate, p.endDate)}</p>}
-                </div>
-                <Segmentado
-                  etiqueta={"Estado de " + p.label}
-                  valor={p.isAvailable ? "si" : "no"}
-                  onChange={(x) => cambiar(p, x === "si")}
-                  ancho
-                  opciones={[
-                    { valor: "si", etiqueta: guardando === p.id ? "Guardando…" : "Disponible" },
-                    { valor: "no", etiqueta: "Alquilado" },
-                  ]}
-                />
-                {pisado && <p className="text-[13px] text-texto-2">Se muestra como no disponible porque se pisa con un período alquilado.</p>}
-              </li>
-            );
-          })}
-        </ul>
+        <p className="mt-1 mb-6 text-[13px] text-texto-2">Cada cambio se guarda solo y se ve enseguida en la publicación.</p>
+        <CalendarioOcupado iniciales={ocupados} periodos={periodos} onGuardar={guardarOcupadosEn("/api/panel/propiedades/" + propiedadId + "/ocupado")} />
       </Hoja>
     </>
   );

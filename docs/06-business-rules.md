@@ -100,6 +100,8 @@
   - **Alquilado:** ninguna noche libre.
 - La ficha muestra solo lo que todavía no pasó, agrupado por mes, con "Disponibilidad actualizada el …", un calendario de solo lectura y, en la tarjeta de precio, el **próximo disponible**.
 - En la consulta, si eligen noches ocupadas, se avisa pero se puede enviar igual.
+- **Elegí tus fechas:** calendario en la ficha para elegir entrada y salida sobre días libres (la salida puede ser un día en que entra otro; no puede haber noches ocupadas en el medio). Muestra el total y abre la consulta con esas fechas. En la Fase 3 suma "Reservar".
+- **Precio de cada noche:** el precio por noche del período más corto que la contiene (la quincena antes que el mes); si ninguno tiene, el precio base de la propiedad si es por noche; si no, "precio a consultar". Así enero puede tener la noche suelta más cara que febrero. Al propietario se le muestra cuánto sale la noche alquilando el período completo, como referencia.
 
 ## Disponibilidad y reservas (Fase 3)
 

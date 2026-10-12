@@ -1,11 +1,21 @@
 "use client";
 import Boton from "@/components/ui/Boton";
 import { Campo, CampoSelect } from "@/components/ui/Campo";
-import { temporadaSugerida } from "@/lib/disponibilidad";
+import { nochesEntre, temporadaSugerida } from "@/lib/disponibilidad";
 import type { MonedaPrecio, PeriodoPrecio } from "@/lib/etiquetas";
 import type { TarifaForm } from "@/lib/valores-propiedad";
 
 const MAX_PERIODOS = 30;
+
+// Cuanto sale la noche alquilando el periodo completo: referencia para poner
+// un precio un poco mas alto a las noches sueltas.
+function referenciaNoche(t: TarifaForm): string {
+  const monto = Number(t.amount);
+  const noches = t.startDate && t.endDate && t.endDate > t.startDate ? nochesEntre(t.startDate, t.endDate) : 0;
+  if (!monto || !noches) return "Para las noches sueltas que queden libres.";
+  const porNoche = Math.round(monto / noches).toLocaleString("es-AR");
+  return "Completo sale " + t.currency + " " + porNoche + " por noche (" + noches + " noches). Para las sueltas conviene un poco más.";
+}
 
 // Periodos de temporada con su precio y su precio por noche (Enero, 1ra quincena…).
 // Lo ocupado se marca aparte, por fechas (CalendarioOcupado).
@@ -60,7 +70,7 @@ export default function EditorPeriodos({
               inputMode="decimal"
               min={0}
               step="any"
-              ayuda="Para las noches sueltas que queden libres."
+              ayuda={referenciaNoche(t)}
             />
           </div>
           <Boton variante="texto" className="mt-3 !text-error" onClick={() => onChange(periodos.filter((_, j) => j !== i))}>

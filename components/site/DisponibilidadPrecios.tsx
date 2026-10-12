@@ -5,7 +5,7 @@ import Icono from "@/components/ui/Icono";
 import { PastillaEstado } from "@/components/ui/Pastilla";
 import { DIAS_SEMANA, grillaMes, mesMas, nocheOcupada } from "@/lib/calendario";
 import { cn } from "@/lib/cn";
-import { agruparPorMes, diaMes, nochesEntre, nombreMes, periodosVigentes, textoNoches, textoNochesCorto, type Rango } from "@/lib/disponibilidad";
+import { agruparPorMes, cotizar, diaMes, nochesEntre, nombreMes, periodosVigentes, pisaOcupado, textoNoches, textoNochesCorto, type Rango } from "@/lib/disponibilidad";
 import { ETIQUETA_PERIODO, formatearMonto, type Moneda, type Periodo } from "@/lib/formato";
 
 export type PeriodoFicha = {
@@ -49,16 +49,21 @@ export default function DisponibilidadPrecios({
   actualizada,
   propiedad,
   whatsapp,
+  precioBaseNoche,
+  moneda,
+  calendario,
 }: {
   periodos: PeriodoFicha[];
   ocupados: Rango[];
   hoy: string;
   actualizada: string | null;
+  precioBaseNoche: number | null; // precio base de la propiedad si es por noche (para noches fuera de los periodos)
+  moneda: Moneda;
+  calendario: boolean; // alquiler temporario: se pueden elegir fechas
   propiedad: PropiedadConsulta;
   whatsapp: string | null;
 }) {
   const { abrir, hoja } = useConsulta(propiedad, whatsapp);
-  const [verCalendario, setVerCalendario] = useState(false);
   const grupos = agruparPorMes(periodosVigentes(periodos, ocupados, hoy));
   const conFechas = periodos.some((p) => p.startDate);
 
@@ -151,15 +156,25 @@ export default function DisponibilidadPrecios({
       </div>
 
       {conFechas && (
-        <div className="mt-6 flex flex-col gap-4">
-          <p className="text-[13px] text-texto-2">
-            {actualizada ? "Disponibilidad actualizada el " + FECHA.format(new Date(actualizada)) + ". " : ""}Tocá un período o unas noches libres para consultar por esas fechas.
-          </p>
-          <button type="button" onClick={() => setVerCalendario((x) => !x)} aria-expanded={verCalendario} className="flex items-center gap-1.5 self-start text-[15px] font-medium text-link hover:opacity-70">
-            {verCalendario ? "Ocultar calendario" : "Ver calendario"}
-            <Icono nombre="flecha-abajo" tamano={16} className={cn("transition-transform duration-200", verCalendario && "rotate-180")} />
-          </button>
-          {verCalendario && <CalendarioPublico ocupados={ocupados} hoy={hoy} desde={periodos.map((p) => p.startDate).filter((d): d is string => Boolean(d && d > hoy)).sort()[0] ?? hoy} />}
+        <p className="mt-6 text-[13px] text-texto-2">
+          {actualizada ? "Disponibilidad actualizada el " + FECHA.format(new Date(actualizada)) + ". " : ""}Tocá un período o unas noches libres para consultar por esas fechas.
+        </p>
+      )}
+
+      {calendario && (
+        <div className={grupos.length ? "mt-10" : ""}>
+          <h3 className="font-titulo text-[17px] font-semibold tracking-[-0.01em]">Elegí tus fechas</h3>
+          <p className="mt-1 mb-4 text-[14px] text-texto-2">Tocá el día de entrada y el de salida. Te mostramos el total con el precio por noche de cada período.</p>
+          <CalendarioFechas
+            ocupados={ocupados}
+            hoy={hoy}
+            desde={periodos.map((p) => p.startDate).filter((d): d is string => Boolean(d && d > hoy)).sort()[0] ?? hoy}
+            periodos={periodos}
+            precioBase={precioBaseNoche}
+            moneda={moneda}
+            minimo={propiedad.minNights}
+            onConsultar={(r) => abrir({ ...r, periodo: textoNoches(r.desde, r.hasta) })}
+          />
         </div>
       )}
       {hoja}
@@ -167,11 +182,62 @@ export default function DisponibilidadPrecios({
   );
 }
 
-// Calendario de solo lectura: lo ocupado tachado en gris.
-function CalendarioPublico({ ocupados, hoy, desde }: { ocupados: Rango[]; hoy: string; desde: string }) {
+// Calendario para elegir fechas: entrada y salida sobre los dias libres, con el total.
+// (Cuando esten las reservas, aca va tambien "Reservar".)
+function CalendarioFechas({
+  ocupados,
+  hoy,
+  desde,
+  periodos,
+  precioBase,
+  moneda,
+  minimo,
+  onConsultar,
+}: {
+  ocupados: Rango[];
+  hoy: string;
+  desde: string;
+  periodos: PeriodoFicha[];
+  precioBase: number | null;
+  moneda: Moneda;
+  minimo: number | null;
+  onConsultar: (r: Rango) => void;
+}) {
   const [mes, setMes] = useState(desde.slice(0, 7));
+  const [entrada, setEntrada] = useState<string | null>(null);
+  const [salida, setSalida] = useState<string | null>(null);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [aviso, setAviso] = useState("");
+
+  // Rango que se ve marcado: el elegido, o el que se esta por elegir (mouse encima)
+  const hasta = salida ?? (entrada && cursor && cursor > entrada ? cursor : null);
+  const enRango = (dia: string) => Boolean(entrada && hasta && dia > entrada && dia < hasta);
+  const cruzaOcupado = (a: string, b: string) => pisaOcupado(a, b, ocupados);
+
+  function tocar(dia: string) {
+    setAviso("");
+    const libre = !nocheOcupada(dia, ocupados);
+    if (!entrada || salida) {
+      if (!libre) return setAviso("Esa noche está ocupada. Elegí un día libre para entrar.");
+      setEntrada(dia);
+      setSalida(null);
+      return;
+    }
+    if (dia <= entrada) {
+      if (!libre) return setAviso("Esa noche está ocupada. Elegí un día libre para entrar.");
+      setEntrada(dia);
+      return;
+    }
+    // La salida puede ser un dia ocupado (ese dia entra otro), pero no puede haber noches ocupadas en el medio
+    if (cruzaOcupado(entrada, dia)) return setAviso("Entre esas fechas hay noches ocupadas. Elegí otra salida.");
+    setSalida(dia);
+  }
+
+  const cotizacion = entrada && salida ? cotizar(entrada, salida, periodos, precioBase) : null;
+  const corto = cotizacion && minimo && cotizacion.noches < minimo;
+
   return (
-    <div className="animate-entrada rounded-card border border-gris-200 p-4 md:p-6">
+    <div className="rounded-card border border-gris-200 p-4 md:p-6">
       <div className="flex items-center justify-end gap-1">
         <button type="button" aria-label="Mes anterior" onClick={() => setMes(mesMas(mes, -1))} disabled={mes <= hoy.slice(0, 7)} className="grid size-10 place-items-center rounded-full transition-colors hover:bg-gris-100 disabled:opacity-30">
           <Icono nombre="flecha-izq" tamano={18} />
@@ -180,7 +246,7 @@ function CalendarioPublico({ ocupados, hoy, desde }: { ocupados: Rango[]; hoy: s
           <Icono nombre="flecha-der" tamano={18} />
         </button>
       </div>
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2" onMouseLeave={() => setCursor(null)}>
         {[mes, mesMas(mes, 1)].map((m, i) => (
           <div key={m} className={cn(i === 1 && "hidden md:block")}>
             <p className="mb-3 font-titulo text-[16px] font-semibold tracking-[-0.01em]">{nombreMes(m + "-01")}</p>
@@ -194,14 +260,38 @@ function CalendarioPublico({ ocupados, hoy, desde }: { ocupados: Rango[]; hoy: s
                 if (!dia) return <span key={j} />;
                 const pasado = dia < hoy;
                 const ocupado = nocheOcupada(dia, ocupados);
+                const extremo = dia === entrada || dia === hasta;
+                const medio = enRango(dia);
+                // Un dia ocupado solo se puede tocar como salida
+                const tocable = !pasado && (!ocupado || Boolean(entrada && !salida && dia > entrada));
                 return (
-                  <span
+                  <button
                     key={dia}
+                    type="button"
+                    disabled={!tocable}
+                    onClick={() => tocar(dia)}
+                    onMouseEnter={() => setCursor(dia)}
                     aria-label={dia + (pasado ? "" : ocupado ? ", ocupado" : ", libre")}
-                    className={cn("mx-auto my-0.5 grid size-9 place-items-center rounded-full text-[14px] tabular-nums", pasado ? "text-gris-400" : ocupado ? "bg-gris-100 text-gris-400 line-through" : "text-negro")}
+                    aria-pressed={extremo}
+                    className={cn(
+                      "relative my-0.5 grid h-10 place-items-center text-[14px] tabular-nums transition-colors duration-150",
+                      medio && "bg-gris-100",
+                      dia === entrada && hasta && "rounded-l-full bg-gris-100",
+                      dia === hasta && "rounded-r-full bg-gris-100",
+                    )}
                   >
-                    {Number(dia.slice(8))}
-                  </span>
+                    <span
+                      className={cn(
+                        "grid size-10 place-items-center rounded-full",
+                        pasado && "text-gris-400",
+                        !pasado && ocupado && !extremo && "text-gris-400 line-through",
+                        !pasado && !ocupado && !extremo && "hover:bg-gris-100",
+                        extremo && "bg-negro text-blanco no-underline",
+                      )}
+                    >
+                      {Number(dia.slice(8))}
+                    </span>
+                  </button>
                 );
               })}
             </div>
@@ -213,8 +303,46 @@ function CalendarioPublico({ ocupados, hoy, desde }: { ocupados: Rango[]; hoy: s
           <span className="size-3 rounded-full border border-gris-400" /> Libre
         </span>
         <span className="flex items-center gap-2">
-          <span className="size-3 rounded-full bg-gris-100" /> Ocupado
+          <span className="text-gris-400 line-through">12</span> Ocupado
         </span>
+      </div>
+
+      <div className="mt-5 min-h-[64px] border-t border-gris-200 pt-5" aria-live="polite">
+        {aviso ? (
+          <p className="text-[14px] text-error">{aviso}</p>
+        ) : entrada && salida && cotizacion ? (
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-[16px] font-medium">
+                {textoNoches(entrada, salida)} · {noches(cotizacion.noches)}
+              </p>
+              <p className="mt-0.5 text-[14px] text-texto-2">
+                {cotizacion.total !== null ? (
+                  <>
+                    <span className="font-titulo text-[18px] font-semibold tracking-[-0.02em] text-negro tabular-nums">{formatearMonto(cotizacion.total, moneda)}</span> en total · salida {diaMes(salida)}
+                  </>
+                ) : (
+                  "Precio a consultar · salida " + diaMes(salida)
+                )}
+              </p>
+              {corto && <p className="mt-1 text-[13px] text-texto-2">La estadía mínima es de {noches(minimo!)}. Podés consultar igual.</p>}
+            </div>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => (setEntrada(null), setSalida(null))} className="text-[14px] text-texto-2 hover:text-negro">
+                Limpiar
+              </button>
+              <button
+                type="button"
+                onClick={() => onConsultar({ desde: entrada, hasta: salida })}
+                className="inline-flex h-11 items-center rounded-pastilla bg-negro px-5 text-[14px] font-medium text-blanco transition-transform duration-200 ease-app active:scale-[0.97]"
+              >
+                Consultar estas fechas
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-[14px] text-texto-2">{entrada ? "Entrada el " + diaMes(entrada) + ". Ahora tocá el día de salida." : "Elegí el día de entrada."}</p>
+        )}
       </div>
     </div>
   );

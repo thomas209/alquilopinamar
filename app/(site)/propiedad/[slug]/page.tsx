@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Consultar, { ContarVista, type PropiedadConsulta } from "@/components/site/Consultar";
-import DisponibilidadPrecios, { ProximoDisponible } from "@/components/site/DisponibilidadPrecios";
+import DisponibilidadPrecios from "@/components/site/DisponibilidadPrecios";
+import Compartir from "@/components/site/Compartir";
+import TarjetaReserva, { PrecioBarra } from "@/components/site/TarjetaReserva";
+import { destacados } from "@/lib/destacados";
 import { hoyArgentina } from "@/lib/disponibilidad";
 import Galeria from "@/components/site/Galeria";
 import { MapaVer } from "@/components/mapa";
@@ -92,6 +95,7 @@ export default async function PropiedadPage({ params }: Props) {
   const hoy = hoyArgentina();
   const hayPeriodos = p.tarifas.some((t) => !t.endDate || t.endDate > hoy);
   const temporario = p.operation === "ALQUILER_TEMPORARIO";
+  const lo = destacados(p);
   const consulta: PropiedadConsulta = {
     slug: p.slug,
     codigo,
@@ -120,13 +124,16 @@ export default async function PropiedadPage({ params }: Props) {
       <div className="px-4 md:grid md:grid-cols-[minmax(0,1fr)_380px] md:gap-16 md:px-0">
         <div>
           <header className="py-6 md:py-8">
-            <Rotulo como="p">
-              {codigo} ·{" "}
-              <Link href={"/zonas/" + p.zona.slug} className="hover:text-negro">
-                {p.zona.name}
-              </Link>{" "}
-              · {tipo}
-            </Rotulo>
+            <div className="flex items-start justify-between gap-4">
+              <Rotulo como="p" className="pt-1">
+                {codigo} ·{" "}
+                <Link href={"/zonas/" + p.zona.slug} className="hover:text-negro">
+                  {p.zona.name}
+                </Link>{" "}
+                · {tipo}
+              </Rotulo>
+              <Compartir titulo={p.title + " · " + codigo} url={SITE_URL + "/propiedad/" + p.slug} className="-mt-2 -mr-3 shrink-0" />
+            </div>
             <h1 className="mt-3 font-titulo text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] md:text-[40px]">{p.title}</h1>
             {datos && <p className="mt-2 text-[15px] text-texto-2">{datos}</p>}
             <div className="mt-4 md:hidden">
@@ -134,6 +141,20 @@ export default async function PropiedadPage({ params }: Props) {
               {p.expenses !== null && <p className="mt-1 text-[14px] text-texto-2">+ {formatearMonto(p.expenses, "ARS")} de expensas</p>}
             </div>
           </header>
+
+          {lo.length > 0 && (
+            <ul className="flex flex-col gap-5 border-t border-gris-200 py-8">
+              {lo.map((d) => (
+                <li key={d.titulo} className="flex items-start gap-4">
+                  <Icono nombre={d.icono} tamano={26} grosor={1.5} className="mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[16px] font-medium">{d.titulo}</p>
+                    <p className="mt-0.5 text-[14px] text-texto-2">{d.detalle}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <Seccion titulo="Descripción">
             <TextoPlegable texto={p.description} className="max-w-[68ch] text-[16px] leading-relaxed" />
@@ -219,7 +240,20 @@ export default async function PropiedadPage({ params }: Props) {
             <p className="mt-1 text-[14px] text-texto-2">
               {etiquetaDe(OPERACIONES, p.operation)} · {p.zona.name}
             </p>
-            {temporario && <ProximoDisponible periodos={p.tarifas} ocupados={p.ocupados} hoy={hoy} propiedad={consulta} whatsapp={whatsapp} />}
+            {temporario && (
+              <TarjetaReserva
+                slug={p.slug}
+                periodos={p.tarifas}
+                ocupados={p.ocupados}
+                hoy={hoy}
+                precioBase={p.pricePeriod === "NOCHE" ? p.price : null}
+                moneda={p.currency}
+                limpieza={p.cleaningFee}
+                deposito={p.securityDeposit}
+                maxHuespedes={p.maxGuests}
+                minNoches={p.minNights}
+              />
+            )}
             <div className="mt-5">
               <Consultar propiedad={consulta} whatsapp={whatsapp} variante="panel" />
             </div>
@@ -241,7 +275,13 @@ export default async function PropiedadPage({ params }: Props) {
       {/* Celular: barra fija abajo con el precio y el contacto */}
       <div className="vidrio-barra fixed inset-x-0 bottom-0 z-30 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] md:hidden">
         <div className="flex items-center justify-between gap-4">
-          <Precio monto={p.price} moneda={p.currency} periodo={p.pricePeriod} className="shrink-0 text-[17px]" />
+          {temporario ? (
+            <PrecioBarra slug={p.slug} periodos={p.tarifas} precioBase={p.pricePeriod === "NOCHE" ? p.price : null} moneda={p.currency} limpieza={p.cleaningFee}>
+              <Precio monto={p.price} moneda={p.currency} periodo={p.pricePeriod} className="shrink-0 text-[17px]" />
+            </PrecioBarra>
+          ) : (
+            <Precio monto={p.price} moneda={p.currency} periodo={p.pricePeriod} className="shrink-0 text-[17px]" />
+          )}
           <div className="min-w-0 flex-1">
             <Consultar propiedad={consulta} whatsapp={whatsapp} variante="barra" />
           </div>

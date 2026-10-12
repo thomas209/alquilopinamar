@@ -138,6 +138,8 @@ export function datosDePropiedad(body: Record<string, unknown>) {
       pricePeriod,
       priceOnRequest: body.priceOnRequest === true,
       expenses: operation === "ALQUILER_ANUAL" ? numero(body.expenses) : null,
+      cleaningFee: esTemporario ? numero(body.cleaningFee) : null,
+      securityDeposit: esTemporario ? numero(body.securityDeposit) : null,
       houseRules: texto(body.houseRules, 4000),
       checkInTime: esTemporario ? texto(body.checkInTime, 10) : null,
       checkOutTime: esTemporario ? texto(body.checkOutTime, 10) : null,

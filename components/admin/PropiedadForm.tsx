@@ -346,6 +346,8 @@ export default function PropiedadForm({
             ))}
           </CampoSelect>
           {esAnual && <Campo etiqueta="Expensas (por mes)" value={v.expenses} onChange={texto("expenses")} type="number" min={0} step="any" />}
+          {esTemporario && <Campo etiqueta="Limpieza final (opcional)" value={v.cleaningFee} onChange={texto("cleaningFee")} type="number" min={0} step="any" ayuda="Una vez por estadía." />}
+          {esTemporario && <Campo etiqueta="Depósito en garantía (opcional)" value={v.securityDeposit} onChange={texto("securityDeposit")} type="number" min={0} step="any" ayuda="Se devuelve al irse." />}
         </div>
         <div className="mt-3">
           <Tilde marcado={v.priceOnRequest} onChange={(x) => set("priceOnRequest", x)}>

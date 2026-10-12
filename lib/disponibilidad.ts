@@ -181,28 +181,51 @@ export function rangosValidos(valor: unknown, hoy: string): { ok: true; rangos: 
   return { ok: true, rangos: normalizarRangos(rangos) };
 }
 
-// ---------- Cotizacion por noche ----------
+// ---------- Cotizacion ----------
 
-type ConPrecio = { label: string; startDate: string | null; endDate: string | null; dailyAmount: number | null; currency: string };
+type ConPrecio = { label: string; startDate: string | null; endDate: string | null; amount: number; period: string; dailyAmount: number | null; currency: string };
+
+const porNoche = (p: ConPrecio) => p.dailyAmount ?? (p.period === "NOCHE" ? p.amount : null);
 
 // Precio de una noche: el del periodo mas corto que la contiene (la quincena antes que el mes)
 // que tenga precio por noche. Si ninguno, el precio base (si es por noche).
 export function precioDeNoche(dia: string, periodos: ConPrecio[], base: number | null): { monto: number | null; periodo: string | null } {
   const candidatos = periodos
-    .filter((p) => p.startDate && p.endDate && p.dailyAmount !== null && dia >= p.startDate && dia < p.endDate)
+    .filter((p) => p.startDate && p.endDate && porNoche(p) !== null && dia >= p.startDate && dia < p.endDate)
     .sort((a, b) => nochesEntre(a.startDate!, a.endDate!) - nochesEntre(b.startDate!, b.endDate!));
-  if (candidatos[0]) return { monto: candidatos[0].dailyAmount, periodo: candidatos[0].label };
+  if (candidatos[0]) return { monto: porNoche(candidatos[0]), periodo: candidatos[0].label };
   return { monto: base, periodo: null };
 }
 
-// Total de una estadia noche por noche. Si a alguna noche le falta precio, total = null ("a consultar").
-export function cotizar(desde: string, hasta: string, periodos: ConPrecio[], base: number | null): { noches: number; total: number | null } {
-  let total = 0;
+export type LineaCotizacion = { tipo: "periodo"; label: string; monto: number } | { tipo: "noches"; monto: number; noches: number };
+
+// Total de una estadia. Los periodos que entran enteros se cobran a su precio
+// (si eligen la 2da quincena completa, sale lo que sale la quincena); el resto,
+// noche por noche. Si a alguna noche le falta precio, total = null ("a consultar").
+export function cotizar(desde: string, hasta: string, periodos: ConPrecio[], base: number | null): { noches: number; total: number | null; detalle: LineaCotizacion[] } {
   const n = nochesEntre(desde, hasta);
-  for (let i = 0; i < n; i++) {
-    const { monto } = precioDeNoche(sumarDias(desde, i), periodos, base);
-    if (monto === null) return { noches: n, total: null };
+  const enteros = periodos.filter((p) => p.startDate && p.endDate && p.period !== "NOCHE" && p.amount > 0);
+  const detalle: LineaCotizacion[] = [];
+  let total = 0;
+  let cursor = desde;
+  while (cursor < hasta) {
+    // El periodo mas largo que empieza aca y entra entero en la estadia
+    const entero = enteros
+      .filter((p) => p.startDate === cursor && p.endDate! <= hasta)
+      .sort((a, b) => nochesEntre(b.startDate!, b.endDate!) - nochesEntre(a.startDate!, a.endDate!))[0];
+    if (entero) {
+      detalle.push({ tipo: "periodo", label: entero.label, monto: entero.amount });
+      total += entero.amount;
+      cursor = entero.endDate!;
+      continue;
+    }
+    const { monto } = precioDeNoche(cursor, periodos, base);
+    if (monto === null) return { noches: n, total: null, detalle: [] };
     total += monto;
+    const ultimo = detalle[detalle.length - 1];
+    if (ultimo && ultimo.tipo === "noches" && ultimo.monto === monto) ultimo.noches++;
+    else detalle.push({ tipo: "noches", monto, noches: 1 });
+    cursor = sumarDias(cursor, 1);
   }
-  return { noches: n, total };
+  return { noches: n, total, detalle };
 }

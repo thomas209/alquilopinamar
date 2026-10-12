@@ -481,6 +481,7 @@ enum ReviewStatus {
 | `propietarios` (2d) | `Property.ownerId`, `submittedAt`, `needsReview` |
 | `disponibilidad` (2d) | `PropertyRate.isAvailable`, `PropertyRate.dailyAmount`, `Property.availabilityUpdatedAt` |
 | `fechas_ocupadas` (2d) | `AvailabilityBlock` (fechas ocupadas). Copia ahí los períodos que estaban marcados como alquilados. `PropertyRate.isAvailable` queda sin uso |
+| `costos_extra` | `Property.cleaningFee` (limpieza final), `Property.securityDeposit` (depósito en garantía) |
 | `add_posts` | `Post` |
 | `add_availability_and_bookings` | `AvailabilityBlock`, `Booking` (sin campos de pago) |
 | `add_payments_and_reviews` | Campos de seña en `Booking`, `Review` |

@@ -273,6 +273,8 @@ export const propiedadPorSlug = cache(async (slug: string) => {
     currency: p.currency as MonedaPrecio,
     pricePeriod: p.pricePeriod as PeriodoPrecio,
     expenses: p.expenses === null ? null : Number(p.expenses),
+    cleaningFee: p.cleaningFee === null ? null : Number(p.cleaningFee),
+    securityDeposit: p.securityDeposit === null ? null : Number(p.securityDeposit),
     houseRules: p.houseRules,
     checkInTime: p.checkInTime,
     checkOutTime: p.checkOutTime,

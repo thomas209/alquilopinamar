@@ -103,6 +103,14 @@
 - **Elegí tus fechas:** calendario en la ficha para elegir entrada y salida sobre días libres (la salida puede ser un día en que entra otro; no puede haber noches ocupadas en el medio). Muestra el total y abre la consulta con esas fechas. En la Fase 3 suma "Reservar".
 - **Precio de cada noche:** el precio por noche del período más corto que la contiene (la quincena antes que el mes); si ninguno tiene, el precio base de la propiedad si es por noche; si no, "precio a consultar". Así enero puede tener la noche suelta más cara que febrero. Al propietario se le muestra cuánto sale la noche alquilando el período completo, como referencia.
 
+## Ficha de alquiler temporario (estilo Airbnb)
+
+- **Tarjeta de reserva** (derecha en compu): llegada, salida y huéspedes, sincronizados con "Elegí tus fechas". Con fechas muestra el desglose y el total; sin fechas, el próximo disponible ("Elegir estas fechas"). En el celular, la barra de abajo muestra el total y el rango elegido.
+- **Total:** los períodos que entran enteros en la estadía se cobran a su precio (la 2da quincena completa sale lo que sale la quincena); el resto, noche por noche. Se suma la **limpieza final** (una vez por estadía). El **depósito en garantía** se informa aparte porque se devuelve.
+- La consulta se abre con las fechas y los huéspedes elegidos.
+- **Destacados** arriba de la descripción (máximo 3, automáticos): distancia al mar (hasta 500 m), pileta climatizada o pileta, vista al mar, mascotas, capacidad (6 o más), parrilla, wifi.
+- **Compartir:** en el celular abre el menú del sistema; en la compu, WhatsApp o copiar el link.
+
 ## Disponibilidad y reservas (Fase 3)
 
 - El calendario aplica solo a **alquiler temporario**.

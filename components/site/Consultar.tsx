@@ -9,6 +9,7 @@ import { pedir } from "@/lib/pedir";
 import type { Operacion } from "@/lib/etiquetas";
 import { useSesion } from "@/store/usuario";
 import { pisaOcupado } from "@/lib/disponibilidad";
+import { useFechasDe } from "@/store/fechas";
 
 export type PropiedadConsulta = {
   slug: string;
@@ -150,8 +151,10 @@ export function HojaConsulta({
   const idForm = useId();
   const temporario = propiedad.operation === "ALQUILER_TEMPORARIO";
   const [contacto] = useState(contactoInicial);
-  const [checkIn, setCheckIn] = useState(fechas?.desde ?? "");
-  const [checkOut, setCheckOut] = useState(fechas?.hasta ?? "");
+  // Fechas: las del periodo tocado, o las elegidas en el calendario de la ficha
+  const elegidas = useFechasDe(propiedad.slug);
+  const [checkIn, setCheckIn] = useState(fechas?.desde ?? elegidas.desde ?? "");
+  const [checkOut, setCheckOut] = useState(fechas?.hasta ?? elegidas.hasta ?? "");
   const fechasAlquiladas = Boolean(checkIn && checkOut && checkOut > checkIn && pisaOcupado(checkIn, checkOut, propiedad.ocupados ?? []));
   const [errores, setErrores] = useState<Errores>({});
   const [errorGeneral, setErrorGeneral] = useState("");
@@ -288,6 +291,7 @@ export function HojaConsulta({
               min={1}
               max={propiedad.maxGuests ?? 50}
               placeholder={propiedad.maxGuests ? "Hasta " + propiedad.maxGuests : "Cantidad"}
+              defaultValue={elegidas.huespedes ?? undefined}
               className="col-span-2"
             />
           </div>

@@ -80,6 +80,9 @@ model Property {
   pricePeriod    PricePeriod
   priceOnRequest Boolean     @default(false) // muestra "Consultar"
   expenses       Decimal?    @db.Decimal(14, 2) // expensas (alquiler anual)
+  // Costos extra de alquiler temporario (en la moneda de la publicacion)
+  cleaningFee     Decimal? @db.Decimal(14, 2) // limpieza final, por estadia
+  securityDeposit Decimal? @db.Decimal(14, 2) // deposito en garantia (se devuelve)
 
   // Estadia
   houseRules   String? @db.Text

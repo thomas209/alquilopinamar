@@ -37,6 +37,8 @@ export type ValoresPropiedad = {
   pricePeriod: PeriodoPrecio;
   priceOnRequest: boolean;
   expenses: string;
+  cleaningFee: string;
+  securityDeposit: string;
   houseRules: string;
   checkInTime: string;
   checkOutTime: string;
@@ -73,6 +75,8 @@ export const VALORES_VACIOS: ValoresPropiedad = {
   pricePeriod: "NOCHE",
   priceOnRequest: false,
   expenses: "",
+  cleaningFee: "",
+  securityDeposit: "",
   houseRules: "",
   checkInTime: "",
   checkOutTime: "",
@@ -113,6 +117,8 @@ type DesdeBase = {
   pricePeriod: PeriodoPrecio;
   priceOnRequest: boolean;
   expenses: { toString(): string } | null;
+  cleaningFee: { toString(): string } | null;
+  securityDeposit: { toString(): string } | null;
   houseRules: string | null;
   checkInTime: string | null;
   checkOutTime: string | null;
@@ -159,6 +165,8 @@ export function valoresDesdeBase(p: DesdeBase): ValoresPropiedad {
     pricePeriod: p.pricePeriod,
     priceOnRequest: p.priceOnRequest,
     expenses: dec(p.expenses),
+    cleaningFee: dec(p.cleaningFee),
+    securityDeposit: dec(p.securityDeposit),
     houseRules: p.houseRules ?? "",
     checkInTime: p.checkInTime ?? "",
     checkOutTime: p.checkOutTime ?? "",

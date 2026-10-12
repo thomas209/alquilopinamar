@@ -7,6 +7,7 @@ import { DIAS_SEMANA, grillaMes, mesMas, nocheOcupada } from "@/lib/calendario";
 import { cn } from "@/lib/cn";
 import { agruparPorMes, cotizar, diaMes, nochesEntre, nombreMes, periodosVigentes, pisaOcupado, textoNoches, textoNochesCorto, type Rango } from "@/lib/disponibilidad";
 import { ETIQUETA_PERIODO, formatearMonto, type Moneda, type Periodo } from "@/lib/formato";
+import { useFechasDe } from "@/store/fechas";
 
 export type PeriodoFicha = {
   id: string;
@@ -162,10 +163,11 @@ export default function DisponibilidadPrecios({
       )}
 
       {calendario && (
-        <div className={grupos.length ? "mt-10" : ""}>
+        <div id="elegir-fechas" className={cn("scroll-mt-28", grupos.length ? "mt-10" : "")}>
           <h3 className="font-titulo text-[17px] font-semibold tracking-[-0.01em]">Elegí tus fechas</h3>
           <p className="mt-1 mb-4 text-[14px] text-texto-2">Tocá el día de entrada y el de salida. Te mostramos el total con el precio por noche de cada período.</p>
           <CalendarioFechas
+            slug={propiedad.slug}
             ocupados={ocupados}
             hoy={hoy}
             desde={periodos.map((p) => p.startDate).filter((d): d is string => Boolean(d && d > hoy)).sort()[0] ?? hoy}
@@ -185,6 +187,7 @@ export default function DisponibilidadPrecios({
 // Calendario para elegir fechas: entrada y salida sobre los dias libres, con el total.
 // (Cuando esten las reservas, aca va tambien "Reservar".)
 function CalendarioFechas({
+  slug,
   ocupados,
   hoy,
   desde,
@@ -194,6 +197,7 @@ function CalendarioFechas({
   minimo,
   onConsultar,
 }: {
+  slug: string;
   ocupados: Rango[];
   hoy: string;
   desde: string;
@@ -203,11 +207,19 @@ function CalendarioFechas({
   minimo: number | null;
   onConsultar: (r: Rango) => void;
 }) {
-  const [mes, setMes] = useState(desde.slice(0, 7));
-  const [entrada, setEntrada] = useState<string | null>(null);
-  const [salida, setSalida] = useState<string | null>(null);
+  const elegidas = useFechasDe(slug);
+  const [mes, setMes] = useState((elegidas.desde ?? desde).slice(0, 7));
+  // "nueva": entrada tocada esperando la salida. Si no hay, se muestra lo elegido (compartido con la tarjeta de la derecha)
+  const [nueva, setNueva] = useState<string | null>(null);
+  const entrada = nueva ?? elegidas.desde;
+  const salida = nueva ? null : elegidas.hasta;
   const [cursor, setCursor] = useState<string | null>(null);
   const [aviso, setAviso] = useState("");
+  const setEntrada = (dia: string) => setNueva(dia);
+  const setSalida = (dia: string) => {
+    elegidas.ponerFechas(entrada, dia);
+    setNueva(null);
+  };
 
   // Rango que se ve marcado: el elegido, o el que se esta por elegir (mouse encima)
   const hasta = salida ?? (entrada && cursor && cursor > entrada ? cursor : null);
@@ -220,7 +232,6 @@ function CalendarioFechas({
     if (!entrada || salida) {
       if (!libre) return setAviso("Esa noche está ocupada. Elegí un día libre para entrar.");
       setEntrada(dia);
-      setSalida(null);
       return;
     }
     if (dia <= entrada) {
@@ -328,7 +339,7 @@ function CalendarioFechas({
               {corto && <p className="mt-1 text-[13px] text-texto-2">La estadía mínima es de {noches(minimo!)}. Podés consultar igual.</p>}
             </div>
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => (setEntrada(null), setSalida(null))} className="text-[14px] text-texto-2 hover:text-negro">
+              <button type="button" onClick={() => (setNueva(null), elegidas.ponerFechas(null, null))} className="text-[14px] text-texto-2 hover:text-negro">
                 Limpiar
               </button>
               <button
@@ -353,16 +364,13 @@ export function ProximoDisponible({
   periodos,
   ocupados,
   hoy,
-  propiedad,
-  whatsapp,
+  onElegir,
 }: {
   periodos: PeriodoFicha[];
   ocupados: Rango[];
   hoy: string;
-  propiedad: PropiedadConsulta;
-  whatsapp: string | null;
+  onElegir: (r: Rango) => void;
 }) {
-  const { abrir, hoja } = useConsulta(propiedad, whatsapp);
   const vigentes = periodosVigentes(
     periodos.filter((p) => p.startDate && p.endDate),
     ocupados,
@@ -385,11 +393,10 @@ export function ProximoDisponible({
       </p>
       <div className="mt-3 flex items-center justify-between gap-3">
         {precio && <p className="font-titulo text-[18px] font-semibold tracking-[-0.02em] tabular-nums">{precio}</p>}
-        <button type="button" onClick={() => abrir({ ...tramo, periodo: p.estado === "libre" ? p.label : p.label + " (" + textoNoches(tramo.desde, tramo.hasta) + ")" })} className="text-[14px] font-medium text-link hover:opacity-70">
-          Consultar estas fechas
+        <button type="button" onClick={() => onElegir(tramo)} className="text-[14px] font-medium text-link hover:opacity-70">
+          Elegir estas fechas
         </button>
       </div>
-      {hoja}
     </div>
   );
 }

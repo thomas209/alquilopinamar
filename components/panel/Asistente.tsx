@@ -425,6 +425,31 @@ export default function Asistente({
             </Tilde>
 
             {esTemporario && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <Campo
+                  etiqueta={"Limpieza final (" + v.currency + ", opcional)"}
+                  value={v.cleaningFee}
+                  onChange={texto("cleaningFee")}
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="any"
+                  ayuda="Se suma una vez por estadía al total."
+                />
+                <Campo
+                  etiqueta={"Depósito en garantía (" + v.currency + ", opcional)"}
+                  value={v.securityDeposit}
+                  onChange={texto("securityDeposit")}
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="any"
+                  ayuda="Se informa aparte: se devuelve al irse."
+                />
+              </div>
+            )}
+
+            {esTemporario && (
               <section>
                 <Rotulo como="p">Temporada: precios y disponibilidad</Rotulo>
                 <p className="mt-2 mb-5 max-w-[60ch] text-[14px] leading-relaxed text-texto-2">

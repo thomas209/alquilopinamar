@@ -181,9 +181,19 @@ export default async function PropiedadPage({ params }: Props) {
             </Seccion>
           )}
 
-          {hayPeriodos && (
-            <Seccion titulo={p.tarifas.some((t) => t.startDate) ? "Disponibilidad y precios" : "Tarifas"}>
-              <DisponibilidadPrecios periodos={p.tarifas} ocupados={p.ocupados} hoy={hoy} actualizada={p.disponibilidadActualizada} propiedad={consulta} whatsapp={whatsapp} />
+          {(hayPeriodos || temporario) && (
+            <Seccion titulo={temporario ? "Disponibilidad y precios" : "Tarifas"}>
+              <DisponibilidadPrecios
+                periodos={p.tarifas}
+                ocupados={p.ocupados}
+                hoy={hoy}
+                actualizada={p.disponibilidadActualizada}
+                precioBaseNoche={p.pricePeriod === "NOCHE" ? p.price : null}
+                moneda={p.currency}
+                calendario={temporario}
+                propiedad={consulta}
+                whatsapp={whatsapp}
+              />
             </Seccion>
           )}
 

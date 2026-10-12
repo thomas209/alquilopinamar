@@ -180,3 +180,29 @@ export function rangosValidos(valor: unknown, hoy: string): { ok: true; rangos: 
   }
   return { ok: true, rangos: normalizarRangos(rangos) };
 }
+
+// ---------- Cotizacion por noche ----------
+
+type ConPrecio = { label: string; startDate: string | null; endDate: string | null; dailyAmount: number | null; currency: string };
+
+// Precio de una noche: el del periodo mas corto que la contiene (la quincena antes que el mes)
+// que tenga precio por noche. Si ninguno, el precio base (si es por noche).
+export function precioDeNoche(dia: string, periodos: ConPrecio[], base: number | null): { monto: number | null; periodo: string | null } {
+  const candidatos = periodos
+    .filter((p) => p.startDate && p.endDate && p.dailyAmount !== null && dia >= p.startDate && dia < p.endDate)
+    .sort((a, b) => nochesEntre(a.startDate!, a.endDate!) - nochesEntre(b.startDate!, b.endDate!));
+  if (candidatos[0]) return { monto: candidatos[0].dailyAmount, periodo: candidatos[0].label };
+  return { monto: base, periodo: null };
+}
+
+// Total de una estadia noche por noche. Si a alguna noche le falta precio, total = null ("a consultar").
+export function cotizar(desde: string, hasta: string, periodos: ConPrecio[], base: number | null): { noches: number; total: number | null } {
+  let total = 0;
+  const n = nochesEntre(desde, hasta);
+  for (let i = 0; i < n; i++) {
+    const { monto } = precioDeNoche(sumarDias(desde, i), periodos, base);
+    if (monto === null) return { noches: n, total: null };
+    total += monto;
+  }
+  return { noches: n, total };
+}

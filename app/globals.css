@@ -41,6 +41,7 @@
   --animate-hoja-entra: hoja-entra 0.45s var(--ease-app) both;
   --animate-entrada: entrada 0.45s var(--ease-app) both;
   --animate-pop: pop 0.5s var(--ease-app);
+  --animate-latido: latido 2.4s var(--ease-app) infinite;
 
   @keyframes velo {
     from { opacity: 0; }
@@ -57,6 +58,17 @@
   @keyframes entrada {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
+  }
+  /* Aro que se expande desde un punto (ej: "Disponible") */
+  @keyframes latido {
+    0% { transform: scale(1); opacity: 0.5; }
+    70%, 100% { transform: scale(3); opacity: 0; }
+  }
+  /* Dia elegido en el calendario */
+  @keyframes marca {
+    0% { transform: scale(0.7); }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1); }
   }
   @keyframes pop {
     0% { transform: scale(0.6); }

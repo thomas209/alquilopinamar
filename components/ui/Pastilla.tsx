@@ -14,7 +14,9 @@ export function PastillaFiltro({
       className={cn(
         "inline-flex h-11 items-center gap-2 rounded-pastilla px-[18px] text-[14px] font-medium whitespace-nowrap",
         "transition-[transform,background-color,color] duration-200 ease-app active:scale-[0.97]",
-        activa ? "bg-negro text-blanco" : "bg-gris-100 text-negro hover:bg-gris-200",
+        activa
+          ? "bg-negro text-blanco"
+          : "bg-gris-100 text-negro hover:bg-gris-200",
         className,
       )}
       {...props}
@@ -37,11 +39,13 @@ const TONOS: Record<Tono, string> = {
 export function PastillaEstado({
   tono = "neutro",
   punto = false,
+  latido = false,
   className,
   children,
 }: {
   tono?: Tono;
   punto?: boolean; // puntito adelante (ej: "Disponible")
+  latido?: boolean; // el puntito late (algo vivo, ej: disponible)
   className?: string;
   children: React.ReactNode;
 }) {
@@ -53,14 +57,29 @@ export function PastillaEstado({
         className,
       )}
     >
-      {punto && <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />}
+      {punto && (
+        <span
+          aria-hidden="true"
+          className="relative size-1.5 rounded-full bg-current"
+        >
+          {latido && (
+            <span className="absolute inset-0 animate-latido rounded-full bg-current" />
+          )}
+        </span>
+      )}
       {children}
     </span>
   );
 }
 
 // Numerito en circulo negro (filtros activos, favoritos).
-export function Contador({ children, className }: { children: React.ReactNode; className?: string }) {
+export function Contador({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <span
       className={cn(

@@ -1,71 +1,86 @@
 # AlquiloPinamar — estado y pendientes
 
-> Última actualización: 11 de octubre de 2026 (Fase 2d-1: panel del propietario).
+> Última actualización: 12 de octubre de 2026.
 > Este archivo dice qué está hecho, qué falta y por dónde seguir. Actualizarlo al cerrar cada paso.
 
 ## Dónde estamos
 
-Fase 1 (MVP) en curso. Están hechos el proyecto base, el design system, el admin completo de propiedades (con fotos) y la primera versión del sitio público. Faltan terminar el sitio público, las consultas, el SEO y publicar.
+**Sitio publicado:** https://alquilopinamar.vercel.app (Vercel publica solo `main`; base en Railway).
 
-| Paso de la Fase 1 | Estado |
-|---|---|
-| 1. Proyecto base + scripts de base de datos | Hecho, en `main` |
-| 2. Design system (componentes base) | Hecho, en `main` |
-| 3. Schema Fase 1 + migración inicial + datos iniciales | Hecho, en `main` |
-| 4a. Admin: login, zonas y amenities | Hecho y probado, en `main` |
-| 4b. Admin: propiedades (listado, formulario, publicar, pausar, duplicar, dar de baja) | Hecho y probado, en `main` |
-| 4c. Admin: fotos de las propiedades (subir, ordenar, portada, borrar) | Hecho y probado, en `main` |
-| 5. Sitio público: header, home con buscador, listado con filtros, ficha, páginas por zona | Hecho y revisado en celular. PR #4 abierto (`sitio-publico` → `main`), falta que Tommy lo una |
-| 6. Consultas: formulario, WhatsApp, mail, bandeja en el admin | Hecho y probado por Tommy. PR #5 abierto (apilado sobre el #4). Falta la cuenta de Resend |
-| 7. SEO: metadata, JSON-LD, imágenes OG, sitemap, robots, llms.txt, páginas por zona | Hecho en la rama `seo`, falta la prueba de Tommy |
-| 8. Páginas institucionales, métricas, revisión en celular y publicación | **Código hecho en la rama `cierre`.** Falta: prueba de Tommy, revisión legal, datos del titular y publicar (guía en `docs/publicacion.md`) |
+Fase 1 (MVP) publicada. De la Fase 2 están publicados: cuentas con link mágico, panel del propietario, favoritos, vista mapa, y la disponibilidad completa de alquiler temporario (períodos, fechas ocupadas, noches sueltas, calendario para elegir fechas y tarjeta de reserva estilo Airbnb).
 
-## Publicación: estado
+| Paso | Estado | PR |
+|---|---|---|
+| Fase 1: proyecto, design system, admin, sitio público, consultas, SEO, legales, publicación | Publicado | #4 a #13 |
+| 2a Favoritos y lista compartible | Publicado | #16 |
+| 2b Vista mapa en el listado | Publicado | #17 |
+| Arreglos: fotos de las cards, cambios sin guardar en el admin | Publicado | #18, #19 |
+| 2c Cuentas con link mágico (`/cuenta`) | Publicado 11/10 | #20 |
+| 2d-1 Panel del propietario: publicar en 9 pasos, mis propiedades, estados | Publicado 11/10 (sin probar a fondo por Tommy) | #21 |
+| Disponibilidad por períodos + fechas ocupadas + noches sueltas | Publicado 12/10 | #21, #22 |
+| "Elegí tus fechas": calendario con total por noche | Publicado 12/10 | #23 |
+| Ficha estilo Airbnb: tarjeta de reserva, limpieza y depósito, destacados, compartir | Publicado 12/10 | #24 |
+| 2d-2 Consultas del propietario | **Siguiente** | — |
 
-**El sitio está publicado (8/10/2026): https://alquilopinamar.vercel.app**
+### Migraciones aplicadas en producción (todas solo agregan)
 
-- **Railway:** proyecto `alquilopinamar`, Postgres en US East (Virginia). Migración `init` aplicada, 5 zonas, 12 amenities y usuario del admin de Tommy.
-- **Vercel:** proyecto `alquilopinamar`. Solo despliega `main` ("Only build production"). 9 variables solo en Production: 5 de configuración (URL, NextAuth URL, Cloudinary cloud y carpeta, mail del admin) y 4 secretas cargadas por Tommy (`DATABASE_URL`, `NEXTAUTH_SECRET`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`).
-- **Probado en producción:** home, zonas, quiénes somos, 404, sitemap, robots (abierto) y login del admin.
-- **`.env.prod-db`** en la Mac de Tommy (permisos 600, ignorado por git).
-- Claude no escribe credenciales en formularios web: las claves las carga Tommy.
-- Los proyectos de Member en Railway y Vercel no se tocan.
+`init` · `usuarios` · `propietarios` · `disponibilidad` · `fechas_ocupadas` · `costos_extra`. Cada una con backup antes y después (`npm run db:deploy-prod`).
+
+## Lo que hicimos el 11 y 12 de octubre
+
+- **Resend:** clave propia `alquilopinamar` (solo envío) en la misma cuenta que Member, sin tocar la de Member. Cargada en Vercel y en el `.env`. La primera clave quedó expuesta en el chat y se reemplazó.
+- **2c Cuentas:** ingreso sin contraseña con link al mail (`/cuenta/ingresar` → mail → `/cuenta/entrar` con botón "Entrar"). `/cuenta` con datos y consultas. El header muestra la cuenta. Las consultas se completan solas con los datos de la cuenta.
+- **2d-1 Panel del propietario:** `/panel/propiedades` y asistente en pasos (qué, descripción, características, ubicación, fotos, comodidades, precio, disponibilidad, reglas y contacto, revisión). Enviar a revisión, retirar, pausar, reanudar y eliminar. En el admin se ve el propietario y "Cambios sin revisar"; se aprueba con "Guardar y publicar".
+- **Disponibilidad (como se alquila en la costa):**
+  - El propietario carga **períodos** con su nombre ("Enero completo", "1ra quincena de enero"…), con precio del período y **precio por noche** para las noches sueltas. El botón "Cargar temporada de verano" arma enero y febrero.
+  - Marca lo **ocupado por fechas** en un calendario (entrada y salida), o con el atajo "Alquilado / Liberar" de cada período. Está en el panel, en el acceso rápido de Mis propiedades y en el admin.
+  - En la ficha, los períodos se agrupan por mes con estado **Disponible / Alquilado en parte (con las noches libres y su total) / Alquilado**.
+- **Elegí tus fechas:** calendario en la ficha para elegir entrada y salida sobre días libres, con el total. Los períodos que entran enteros se cobran a su precio; el resto, noche por noche (la quincena antes que el mes); si no hay período, el precio base.
+- **Ficha estilo Airbnb:**
+  - Tarjeta de reserva a la derecha: llegada, salida y huéspedes sincronizados con el calendario, desglose, limpieza final y total, y el depósito en garantía aparte. Sin fechas, muestra el "Próximo disponible".
+  - Barra del celular con el total.
+  - Destacados automáticos ("A 100 m del mar"…) y botón Compartir.
+- **AP-0001 con datos de ejemplo:** temporada cargada (precios del ejemplo de Balmoral y precios por noche inventados), 1 al 10 de enero ocupado y la 2da quincena de enero alquilada. **Hay que reemplazarlos por los reales.**
 
 ## Por dónde seguir (retomar acá)
 
-Fase 1 publicada. Lo que queda para cerrarla del todo:
+### Lo que tiene que hacer Tommy
 
-1. **Tommy:** entrar a https://alquilopinamar.vercel.app/admin con su usuario de producción y cargar las primeras propiedades reales.
-2. **Tommy:** secreto `PROD_DATABASE_URL` en GitHub para el backup diario (Settings → Secrets and variables → Actions).
-3. **Hecho (11/10):** clave de Resend propia (`alquilopinamar`, solo envío) en Vercel y en el `.env`. Falta probar que llegue el aviso de una consulta en producción.
-4. **Tommy:** clave nueva de Cloudinary (la actual quedó en un chat): actualizarla en Vercel y en el `.env`.
-5. **Tommy:** titular del sitio y revisión legal de términos y privacidad; después cargar `NEXT_PUBLIC_TITULAR`, `NEXT_PUBLIC_CUIT`, `NEXT_PUBLIC_DOMICILIO`, `NEXT_PUBLIC_WHATSAPP` y `NEXT_PUBLIC_EMAIL_CONTACTO` en Vercel (Config) y redeploy.
-6. Dominio propio, Google Search Console y Content-Security-Policy (ver `docs/publicacion.md`).
-7. Después: Fase 2 (registro con link mágico, panel del propietario, favoritos, mapa).
+1. **Probar el panel del propietario** de punta a punta: `/cuenta` → "Publicar mi propiedad" → 10 pasos → enviar a revisión → aprobar desde el admin.
+2. **Mirar la ficha en el celular:** elegir fechas y ver que la barra de abajo muestre el total.
+3. **AP-0001:** cargar los precios reales, los precios por noche, la limpieza y el depósito, los huéspedes reales (hoy dice 2) y una descripción real.
+4. **Probar el aviso de consulta por mail** en producción (Resend): hacer una consulta y ver que llegue a thomascaronia@gmail.com.
+5. **Dominio propio** y verificarlo en Resend. Sin dominio, los links de ingreso y los avisos solo llegan a Tommy, así que el panel todavía no se puede abrir a otros propietarios. Con dominio: cambiar "Publicá tu propiedad" de `/contacto` y del footer para que lleve a `/panel/propiedades/nueva`.
+6. **Clave nueva de Cloudinary** (la actual quedó escrita en un chat) en Vercel y en el `.env`.
+7. **Secreto `PROD_DATABASE_URL` en GitHub** para el backup diario automático.
+8. **Titular del sitio y revisión legal** de términos y privacidad; después cargar `NEXT_PUBLIC_TITULAR`, `NEXT_PUBLIC_CUIT`, `NEXT_PUBLIC_DOMICILIO`, `NEXT_PUBLIC_WHATSAPP` y `NEXT_PUBLIC_EMAIL_CONTACTO` en Vercel.
+9. **Cargar más propiedades reales** (hoy hay una sola).
+10. Borrar en GitHub la rama vieja `cuentas` (intento abandonado del 10/10, nunca se unió).
 
-Al pegar una clave en Vercel: correr el comando que la copia, escribir el nombre a mano en Key (no copiarlo) y pegar en Value. Si se copia otra cosa en el medio, se pisa lo copiado.
+### Lo que sigue en código (en orden)
+
+1. **2d-2 Consultas del propietario:** `/panel/consultas` con su bandeja (responder por mail o WhatsApp, marcar respondida) y aviso por mail al dueño de cada consulta nueva.
+2. **Buscador por fechas y huéspedes en el listado:** mostrar solo lo libre en esas fechas, con el total, y la etiqueta "Libre: 2da Ene" en las cards.
+3. **2e Moderación en el admin:** cola de "En revisión", aprobar o rechazar con motivo y aviso por mail.
+4. **Más de la ficha estilo Airbnb:** "Dónde vas a dormir" (camas por dormitorio), "Qué hay cerca" (playa, centro, súper), perfil del anfitrión y todas las comodidades en una hoja.
+5. **Disponibilidad al día:** aviso si no se actualiza hace 30 días; "Copiar la temporada pasada".
+6. **Fase 3 Reservas:** el botón "Reservar" en la tarjeta y en el calendario → solicitud → el dueño acepta → se bloquean las fechas.
+7. **Fase 4:** seña con Mercado Pago, reseñas, perfil de anfitrión, mails de notificación.
+8. **Publicación:** Content-Security-Policy, Google Search Console y dominio.
+
+### Cómo publicar un cambio con migración (lo que venimos haciendo)
+
+1. Claude abre el PR.
+2. Tommy, en la Mac: `git fetch origin && git checkout <rama> && git pull` y después `npm run db:deploy-prod`, escribiendo exactamente `APLICAR EN PRODUCCION`.
+3. Claude une el PR y Vercel publica.
+
+En la Mac, después: `git checkout main && git pull` (y `npm install` si cambió algo).
 
 ### Cómo probar el SEO
 
-- `http://localhost:3000/sitemap.xml`: tienen que aparecer la home, los listados, las zonas y cada propiedad publicada con sus fotos.
-- `http://localhost:3000/robots.txt`: en local dice `Disallow: /` (bien: solo producción se indexa).
-- `http://localhost:3000/llms.txt`: resumen del sitio en texto.
-- `http://localhost:3000/opengraph-image` y `http://localhost:3000/zonas/pinamar/opengraph-image`: las imágenes que se ven al compartir.
-- Una dirección que no existe (ej. `/propiedad/no-existe`): página 404 propia.
-- En una ficha, clic derecho → "Ver código fuente" y buscar `application/ld+json`.
-- Después de publicar: pasar una ficha por https://search.google.com/test/rich-results y https://www.opengraph.xyz.
-
-## Lo próximo que tiene que hacer Tommy
-
-1. **Unir los PR #4 y #5** (en ese orden) y **probar el SEO y el paso 8** (ver arriba).
-2. **Definir el titular del sitio** (persona o empresa, CUIT y domicilio) y **hacer revisar los términos y la privacidad por un abogado** (ver `docs/publicacion.md` → Textos legales).
-3. **Resend: hecho.** Clave propia en Vercel y en el `.env`. Cuando haya dominio, verificarlo en Resend y limitar la clave a ese dominio.
-4. **Escribir el texto de cada zona** desde el admin (Zonas → descripción y título para Google): es lo que posiciona las páginas por zona.
-5. **Cargar más propiedades reales** (3 o 4, con 5 fotos distintas o más). Hoy hay una sola publicada, la AP-0001.
-6. **Cargar un WhatsApp** en la propiedad desde el admin (o definir el del sitio): sin número, la ficha no muestra el botón de WhatsApp.
-7. **Pasar el logo en un archivo aparte** si es el definitivo, para ponerlo en el header.
-8. **Cambiar la clave de Cloudinary antes de publicar el sitio:** el secret actual quedó escrito en un chat. Generar una nueva en Cloudinary → API Keys, ponerla en el `.env` y borrar la vieja.
-9. **Conseguir cuando se pueda:** dominio definitivo y número de WhatsApp del sitio. No frenan el desarrollo.
+- `http://localhost:3000/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/opengraph-image`.
+- En una ficha: "Ver código fuente" y buscar `application/ld+json`.
+- Después de publicar: https://search.google.com/test/rich-results y https://www.opengraph.xyz.
 
 ## Qué está hecho
 
@@ -132,32 +147,16 @@ Los 9 documentos del primer entregable: visión, arquitectura, schema, UX/UI, de
 - `npm run db:preparar-prod`: carga zonas, amenities y el usuario del admin en producción (backup + confirmación, solo inserta).
 - `docs/publicacion.md`: la guía completa para publicar (Railway, Vercel, dominio, Resend, backups, Google y prueba final).
 
+### Fase 2 (publicada)
+- **2a Favoritos (PR #16)** y **2b Vista mapa (PR #17)**.
+- **2c Cuentas (PR #20):** `lib/usuarios.ts`, `lib/sesion.ts` (cookie firmada `ap_sesion`, 30 días), tablas `User` y `LoginToken`.
+- **2d-1 Panel (PR #21):** `app/panel/`, `components/panel/Asistente.tsx`, `lib/panel.ts`, fotos compartidas con el admin en `lib/fotos.ts`. El proxy protege `/panel` y `/api/panel`.
+- **Disponibilidad (PR #21, #22, #23):** `lib/disponibilidad.ts` (estados, noches libres, cotización), `lib/ocupado.ts`, `components/panel/CalendarioOcupado.tsx`, `components/panel/EditorPeriodos.tsx`, `components/site/DisponibilidadPrecios.tsx`. Tabla `AvailabilityBlock`.
+- **Ficha estilo Airbnb (PR #24):** `components/site/TarjetaReserva.tsx`, `store/fechas.ts` (fechas compartidas en la ficha), `lib/destacados.ts`, `components/site/Compartir.tsx`.
+
 ## Qué falta desarrollar
 
-### Fase 1 — lo que queda
-- **Hecho (PR #12):** Admin > Contenido con la portada de la home y de cada zona (se sube a Cloudinary en `alquilopinamar/portadas/`; si no hay, se usa la foto de la primera propiedad). En el admin de propiedades el punto se elige tocando el mapa. La ficha tiene la sección Ubicación con mapa: círculo aproximado salvo que se marque "mostrar ubicación exacta"; las coordenadas reales no salen del servidor. Mapas con MapLibre + OpenFreeMap (gratis, sin clave; CARTO pasó a pedir clave y se reemplazó en el PR #14).
-- **En la Mac:** después de `git pull` correr `npm install` (el mapa usa `maplibre-gl`).
-- **Cierre:** prueba completa en celular con datos reales; Content-Security-Policy (permitir `tiles.openfreemap.org` y `blob:` en worker-src para el mapa).
-- **Publicación:** dominio definitivo, Google Search Console.
-
-### Fase 2
-- **2a Favoritos (hecho, PR #16):** corazón en cards y ficha, contador en el header, `/favoritos` (con "Ya no disponibles") y lista compartible `/lista?de=Nombre&p=slugs` con imagen para WhatsApp. En el navegador, sin cuenta (zustand, máximo 40).
-- **2b Vista mapa (hecho, PR #17):** botón flotante "Ver mapa / Ver lista" en `/propiedades` (`?vista=mapa`, noindex). Pines con precio corto; al tocar uno, tarjeta abajo. En desktop, lista a la izquierda que cambia al mover el mapa. Usa la ubicación pública (aproximada salvo punto exacto); las que no tienen punto no aparecen y se avisa.
-- **2c Cuentas (rama `fase2c-cuentas`, PR abierto, falta la prueba de Tommy):** ingreso con link mágico en `/cuenta/ingresar` (vence a los 15 min, un solo uso, se guarda el hash). El link lleva a `/cuenta/entrar` con un botón "Entrar" (así los antivirus del mail no lo gastan). La cuenta se crea al usar el link. Sesión con cookie firmada de 30 días (`ap_sesion`), separada del admin. `/cuenta`: datos (nombre, apellido, teléfono, WhatsApp), consultas hechas (por cuenta o por el mismo mail) y cerrar sesión. Header con acceso a la cuenta. El formulario de consulta se completa con los datos de la cuenta y la consulta queda asociada. Límite: 3 links cada 15 min por mail y 10 por hora por IP. Migración `20261011220000_usuarios` (tablas `User` y `LoginToken`, `Inquiry.userId`): aplicar en local con `npm run db:migrate`; a producción solo con backup y OK de Tommy.
-- **Ojo Resend:** sin dominio verificado los links solo llegan a thomascaronia@gmail.com. Para que entren otras personas hace falta el dominio (ver `docs/publicacion.md`).
-- **2d-1 Panel del propietario (hecho, PR #21, publicado el 11/10):** `/panel/propiedades` (mis propiedades con estado y motivo de rechazo) y asistente en 9 pasos (qué, descripción, características, ubicación, fotos, comodidades, precio, reglas y contacto, revisión) para crear y editar. Se guarda como borrador al pasar de paso. Enviar a revisión pide la propiedad completa y nombre + teléfono/WhatsApp en la cuenta. Publicada: edita al instante; cambios de título, descripción o fotos quedan "Cambios sin revisar" en el admin. Pausar/reanudar y eliminar. El proxy protege `/panel` y `/api/panel`. En el admin: se ve el propietario y se aprueba con "Guardar y publicar". Migración `20261011230000_propietarios` (solo agrega 3 columnas a Property).
-- **Cuando haya dominio:** cambiar "Publicá tu propiedad" de `/contacto` y del footer para que lleve a `/panel/propiedades/nueva` (hoy siguen por WhatsApp porque los links de ingreso solo llegan a Tommy).
-- **Disponibilidad por períodos (hecho, PR #21; reemplazado por fechas ocupadas):** como en las inmobiliarias de la costa. El propietario (o el admin) carga períodos de temporada (botón "Cargar temporada de verano": enero y febrero completos y por quincena) con precio, valor por día y estado Disponible/Alquilado. En la ficha: "Disponibilidad y precios" en tarjetas (deslizables en el celular), lo pisado por un alquilado sale "No disponible", "Actualizada el …", y tocar uno disponible abre la consulta con esas fechas. Acceso rápido "Disponibilidad" en Mis propiedades. Migración `20261012000000_disponibilidad` (solo agrega).
-- **Fechas ocupadas y noches sueltas (rama `disponibilidad-fechas`):** lo ocupado se marca por fechas (calendario + atajo "Alquilado" por período) en el panel, en el acceso rápido y en el admin. La ficha agrupa los períodos por mes con su nombre, fechas claras ("1 al 15 de enero · salida 16/1 · 15 noches"), precio del período y por noche, y estados Disponible / Alquilado en parte (con las noches sueltas consultables) / Alquilado; "Ver calendario"; y "Próximo disponible" en la tarjeta de precio. Migración `20261012030000_fechas_ocupadas` (tabla nueva + copia de lo marcado como alquilado).
-- **Ficha estilo Airbnb (rama `ficha-pro`):** tarjeta de reserva con fechas y huéspedes sincronizados con el calendario, desglose (períodos enteros a su precio + noches sueltas + limpieza) y total; depósito en garantía aparte; barra del celular con el total; destacados automáticos; botón Compartir. Migración `20261012150000_costos_extra`.
-- **Siguiente:** 2d-2 consultas del propietario, 2e moderación. Después: disponibilidad en el listado ("Libre: 2da Ene") y filtro por mes; aviso si la disponibilidad no se actualiza hace 30 días.
-Registro con link mágico, panel del propietario (publicar en pasos, editar, pausar, bandeja de consultas), moderación en el admin, favoritos y lista compartible, vista mapa, novedades.
-
-### Fase 3
-Calendario de disponibilidad, precios por temporada, búsqueda por fechas real, solicitud de reserva.
-
-### Fase 4
-Seña con Mercado Pago, reseñas, perfil de anfitrión, mails de notificación.
+Ver "Lo que sigue en código" arriba. Fase 3: reservas (solicitud, aceptar, bloquear fechas, cron que vence las no pagadas). Fase 4: seña con Mercado Pago, reseñas, perfil de anfitrión, mails.
 
 ## Decisiones tomadas
 
@@ -177,6 +176,10 @@ Seña con Mercado Pago, reseñas, perfil de anfitrión, mails de notificación.
 | `referencia-member` | Fuera de git: tiene el código de Member y datos bancarios |
 | Cloudinary | Misma cuenta que Member (`dklvmlzds`), con clave propia `alquilopinamar` (rol Master Admin). Todo va a la carpeta `alquilopinamar/propiedades/AP-xxxx/`; el código no sube ni borra nada fuera de `alquilopinamar/`. Comparten el cupo del plan gratis |
 | Fotos | Van directo del navegador a Cloudinary con firma del servidor, en calidad original. Hasta 10 MB cada una y 40 por propiedad. Una publicada no puede quedar con menos del mínimo |
+| Ingreso de usuarios | Link mágico por mail (15 min, un solo uso); el link abre una página con botón "Entrar" para que los antivirus del mail no lo gasten |
+| Disponibilidad | Períodos con nombre (mes, quincenas) + fechas ocupadas por día. Estado de cada período calculado: Disponible / Alquilado en parte / Alquilado |
+| Precio de las noches | Período entero a su precio; noches sueltas al precio por noche del período más corto que las contiene; si no, el precio base. Limpieza se suma; depósito aparte |
+| Panel abierto a otros | Recién cuando haya dominio verificado en Resend |
 
 ## Datos de esta Mac
 
